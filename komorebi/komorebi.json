@@ -18,21 +18,92 @@
     {
       "workspaces": [
         {
-          "name": "I",
+          "name": "VI",
           "layout": "BSP"
+        },
+        {
+          "name": "VII",
+          "layout": "BSP"
+        },
+        {
+          "name": "VIII",
+          "layout": "BSP"
+        },
+        {
+          "name": "IX",
+          "layout": "BSP"
+        },
+        {
+          "name": "X",
+          "layout": "BSP"
+        }
+      ]
+    },
+    {
+      "workspaces": [
+        {
+          "name": "I",
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "id": "ms-teams.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "id": "OUTLOOK.EXE",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            }
+          ]
         },
         {
           "name": "II",
-          "layout": "BSP"
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "id": "msedge.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            }
+          ]
         },
         {
           "name": "III",
-          "layout": "BSP"
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "id": "Obsidian.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "id": "ONENOTE.EXE",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            }
+          ]
         },
         {
           "name": "IV",
-          "layout": "BSP"
+          "layout": "BSP",
+          "initial_workspace_rules": [
+            {
+              "id": "Code.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "id": "WindowsTerminal.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            }
+          ]
         },
+        {
+          "name": "V",
+          "layout": "BSP"
+        }
       ]
     }
   ]
