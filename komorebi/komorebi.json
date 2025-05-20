@@ -38,7 +38,12 @@
           "layout": "BSP",
           "initial_workspace_rules": [
             {
-              "id": "msedge.exe",
+              "id": "Obsidian.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            },
+            {
+              "id": "ONENOTE.EXE",
               "kind": "Exe",
               "matching_strategy": "Equals"
             }
@@ -49,12 +54,7 @@
           "layout": "BSP",
           "initial_workspace_rules": [
             {
-              "id": "Obsidian.exe",
-              "kind": "Exe",
-              "matching_strategy": "Equals"
-            },
-            {
-              "id": "ONENOTE.EXE",
+              "id": "msedge.exe",
               "kind": "Exe",
               "matching_strategy": "Equals"
             }
