@@ -48,8 +48,9 @@
     {
       "Network": {
         "enable": true,
-        "show_activity": true,
-        "show_total_activity": false
+        "show_total_data_transmitted": false,
+        "show_network_activity": true
+
       }
     },
     {
