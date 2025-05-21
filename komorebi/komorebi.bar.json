@@ -27,7 +27,7 @@
   "right_widgets": [
     {
       "Update": {
-        "enable": true
+        "enable": false
       }
     },
     {
