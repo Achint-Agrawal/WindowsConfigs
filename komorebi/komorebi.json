@@ -14,6 +14,7 @@
     "unfocused_border": "Base03",
     "bar_accent": "Base0D"
   },
+  "mouse_follows_focus": false,
   "monitors": [
     {
       "workspaces": [
