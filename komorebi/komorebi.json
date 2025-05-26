@@ -106,5 +106,12 @@
         }
       ]
     }
+  ],
+  "ignore_rules": [
+    {
+      "id": "Save query?",
+      "kind": "Title",
+      "matching_strategy": "Equals"
+    }
   ]
 }
