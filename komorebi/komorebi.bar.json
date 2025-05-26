@@ -41,6 +41,11 @@
       }
     },
     {
+      "Cpu": {
+        "enable": true
+      }
+    },
+    {
       "Memory": {
         "enable": true
       }
