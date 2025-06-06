@@ -50,6 +50,7 @@ alt + shift + f         : komorebic toggle-monocle
 # Window manager options
 alt + r                 : komorebic retile
 alt + shift + r         : komorebic stop --bar --whkd; komorebic start --bar --whkd
+alt + shift + s         : komorebic stop --bar --whdk
 alt + p                 : komorebic toggle-pause
 
 # Layouts
