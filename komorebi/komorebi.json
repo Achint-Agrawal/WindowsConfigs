@@ -113,6 +113,11 @@
       "id": "Save query?",
       "kind": "Title",
       "matching_strategy": "Equals"
+    },
+    {
+      "id": "Clock",
+      "kind": "Title",
+      "matching_strategy": "Equals"
     }
   ]
 }
