@@ -85,6 +85,26 @@
         {
           "name": "V",
           "layout": "BSP"
+        },
+        {
+          "name": "VI",
+          "layout": "BSP"
+        },
+        {
+          "name": "VII",
+          "layout": "BSP"
+        },
+        {
+          "name": "VIII",
+          "layout": "BSP"
+        },
+        {
+          "name": "IX",
+          "layout": "BSP"
+        },
+        {
+          "name": "X",
+          "layout": "BSP"
         }
       ]
     }
