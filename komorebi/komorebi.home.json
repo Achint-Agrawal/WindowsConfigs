@@ -71,6 +71,11 @@
               "matching_strategy": "Equals"
             },
             {
+              "id": "CodeFlow.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            },
+            {
               "id": "WindowsTerminal.exe",
               "kind": "Exe",
               "matching_strategy": "Equals"

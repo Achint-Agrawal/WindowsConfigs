@@ -71,6 +71,11 @@
               "matching_strategy": "Equals"
             },
             {
+              "id": "CodeFlow.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
+            },
+            {
               "id": "WindowsTerminal.exe",
               "kind": "Exe",
               "matching_strategy": "Equals"
@@ -87,6 +92,11 @@
   "ignore_rules": [
     {
       "id": "Save query?",
+      "kind": "Title",
+      "matching_strategy": "Equals"
+    },
+    {
+      "id": "Find and Replace",
       "kind": "Title",
       "matching_strategy": "Equals"
     }

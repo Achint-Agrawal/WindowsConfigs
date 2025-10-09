@@ -56,6 +56,9 @@ wezterm/.cache/
 # Komorebi generated logs (keep JSON configs)
 komorebi/*.log
 
+# Android emulator artifacts (local only)
+.android/
+
 # Update notifier / telemetry (ignore contents)
 configstore/**
 !configstore/.gitkeep
@@ -63,6 +66,9 @@ configstore/**
 # Copilot / symbol / cache databases
 **/*.db
 **/*.db-*
+
+# GitHub Copilot generated cache/state (not useful across devices)
+github-copilot/
 
 # Lock files usually not needed unless you want deterministic plugin fetch
 package-lock.json
