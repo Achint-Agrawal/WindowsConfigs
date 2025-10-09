@@ -71,7 +71,8 @@ yarn.lock
 
 # Allowlist: explicitly keep important tracked files
 !nvim/lazy-lock.json
-!komorebi/*.json
+# Ignore specific Komorebi layout config
+komorebi/komorebi.json
 !wezterm/wezterm.lua
 !whkdrc
 
