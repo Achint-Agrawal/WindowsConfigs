@@ -1,13 +1,15 @@
 param(
     [Parameter(Position=0,Mandatory=$false)]
     [ValidateSet('laptop','ghar')]
-    [string]$Profile,
+    [string]$ProfileName,
 
-    [switch]$List
+    [switch]$List,
+    
+    [switch]$SkipReapply
 )
 
 # If no profile provided and -List not used, offer an interactive selector (simple loop; integrates with fzf if available)
-if (-not $Profile) {
+if (-not $ProfileName) {
     if ($List -or $true) {
         $choices = 'laptop','ghar'
         if (Get-Command fzf -ErrorAction SilentlyContinue) {
@@ -23,21 +25,21 @@ if (-not $Profile) {
             }
         }
         if (-not $sel) { Write-Error 'No selection made'; exit 1 }
-        $Profile = $sel
+        $ProfileName = $sel
     }
 }
 
-if (-not $Profile) { Write-Error 'No profile specified'; exit 1 }
+if (-not $ProfileName) { Write-Error 'No profile specified'; exit 1 }
 
 $cfgHome = if ($Env:KOMOREBI_CONFIG_HOME) { $Env:KOMOREBI_CONFIG_HOME } else { Join-Path $Env:USERPROFILE '.config\komorebi' }
-$target = Join-Path $cfgHome ("komorebi.$Profile.json")
+$target = Join-Path $cfgHome ("komorebi.$ProfileName.json")
 $active = Join-Path $cfgHome 'komorebi.json'
 
 if (-not (Test-Path $target)) {
     Write-Error "Profile file not found: $target"; exit 1
 }
 
-Write-Host "Switching Komorebi configuration to '$Profile'" -ForegroundColor Yellow
+Write-Host "Switching Komorebi configuration to '$ProfileName'" -ForegroundColor Yellow
 
 $symlinkCreated = $false
 
@@ -73,14 +75,21 @@ if (-not (Test-Path $active)) {
     exit 1
 }
 
-# Restart komorebi (stop and start with bar and whkd)
-try {
-    komorebic stop --bar --whkd | Out-Null
-    Start-Sleep -Milliseconds 500
-    komorebic start --bar --whkd | Out-Null
-    Write-Host 'Komorebi restarted with bar and whkd.' -ForegroundColor Green
-} catch {
-    Write-Warning "Failed to restart komorebi automatically. You can run: komorebic stop --bar --whkd; komorebic start --bar --whkd"
-}
-
 Write-Host ("Active configuration now points to: " + $(if ($symlinkCreated) { (Get-Item $active).Target } else { $target })) -ForegroundColor Cyan
+
+# Restart and re-apply the same profile to ensure configuration is fully loaded
+if (-not $SkipReapply) {
+    try {
+        komorebic stop --bar --whkd | Out-Null
+        Start-Sleep -Milliseconds 500
+        komorebic start --bar --whkd | Out-Null
+        Write-Host 'Komorebi restarted with bar and whkd.' -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to restart komorebi automatically. You can run: komorebic stop --bar --whkd; komorebic start --bar --whkd"
+    }
+    
+    Write-Host "Re-applying profile '$ProfileName' to ensure proper configuration load..." -ForegroundColor Yellow
+    Start-Sleep -Milliseconds 1000
+    & $PSCommandPath -ProfileName $ProfileName -SkipReapply
+    Write-Host "Profile '$ProfileName' successfully applied and verified." -ForegroundColor Green
+}
