@@ -77,19 +77,38 @@ if (-not (Test-Path $active)) {
 
 Write-Host ("Active configuration now points to: " + $(if ($symlinkCreated) { (Get-Item $active).Target } else { $target })) -ForegroundColor Cyan
 
-# Restart and re-apply the same profile to ensure configuration is fully loaded
+# NOTE: Modified to enforce YASB-only bar usage. We intentionally do NOT use the komorebi built-in bar (--bar flag removed)
+#       so that only YASB renders a bar. If any 'komorebi-bar' process is running (older session), we stop it.
+
+# Restart and re-apply the same profile to ensure configuration is fully loaded (without komorebi bar)
 if (-not $SkipReapply) {
     try {
-        komorebic stop --bar --whkd | Out-Null
+        komorebic stop --whkd | Out-Null
         Start-Sleep -Milliseconds 500
-        komorebic start --bar --whkd | Out-Null
-        Write-Host 'Komorebi restarted with bar and whkd.' -ForegroundColor Green
+        komorebic start --whkd | Out-Null
+        Write-Host 'Komorebi restarted (no built-in bar) with whkd.' -ForegroundColor Green
     } catch {
-        Write-Warning "Failed to restart komorebi automatically. You can run: komorebic stop --bar --whkd; komorebic start --bar --whkd"
+        Write-Warning "Failed to restart komorebi automatically. You can run: komorebic stop --whkd; komorebic start --whkd"
     }
-    
+
+    # Kill legacy komorebi-bar process if present
+    Get-Process -Name 'komorebi-bar' -ErrorAction SilentlyContinue | ForEach-Object { 
+        try { $_ | Stop-Process -Force -ErrorAction Stop; Write-Host 'Stopped residual komorebi-bar process.' -ForegroundColor DarkYellow } catch {}
+    }
+
+    # (Optional) Launch YASB here if not already auto-started
+    if (-not (Get-Process yasb -ErrorAction SilentlyContinue)) {
+        $yasbPath = 'C:\Program Files\YASB\yasb.exe'
+        if (Test-Path $yasbPath) {
+            Start-Process $yasbPath
+            Write-Host 'Started YASB bar.' -ForegroundColor Green
+        } else {
+            Write-Warning 'YASB executable not found at default path; ensure YASB is started separately.'
+        }
+    }
+
     Write-Host "Re-applying profile '$ProfileName' to ensure proper configuration load..." -ForegroundColor Yellow
     Start-Sleep -Milliseconds 1000
     & $PSCommandPath -ProfileName $ProfileName -SkipReapply
-    Write-Host "Profile '$ProfileName' successfully applied and verified." -ForegroundColor Green
+    Write-Host "Profile '$ProfileName' successfully applied and verified (YASB-only bar)." -ForegroundColor Green
 }

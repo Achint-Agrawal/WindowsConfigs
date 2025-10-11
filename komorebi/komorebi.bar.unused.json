@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.37/schema.bar.json",
+  "$schema": "https://raw.githubusercontent.com/LGUG2Z/komorebi/v0.1.38/schema.bar.json",
   "monitor": 0,
   "font_family": "JetBrains Mono",
   "theme": {
@@ -49,8 +49,9 @@
       "Network": {
         "enable": true,
         "show_total_data_transmitted": false,
-        "show_network_activity": true
-
+        "show_network_activity": true,
+        "show_activity": true,
+        "show_total_activity": false
       }
     },
     {
