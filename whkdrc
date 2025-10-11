@@ -87,8 +87,6 @@ alt + shift + 0         : komorebic move-to-named-workspace "X"
 # Keybindings:
 #   alt + ctrl + g  -> ghar profile
 #   alt + ctrl + l  -> laptop profile
-#   alt + ctrl + p  -> interactive picker (fzf if installed)
 # ------------------------------------------------------------
 alt + ctrl + g          : powershell -NoProfile -ExecutionPolicy Bypass -File $Env:KOMOREBI_CONFIG_HOME/switch-komorebi.ps1 ghar
 alt + ctrl + l          : powershell -NoProfile -ExecutionPolicy Bypass -File $Env:KOMOREBI_CONFIG_HOME/switch-komorebi.ps1 laptop
-alt + ctrl + p          : powershell -NoProfile -ExecutionPolicy Bypass -File $Env:KOMOREBI_CONFIG_HOME/switch-komorebi.ps1
