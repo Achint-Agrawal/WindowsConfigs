@@ -501,3 +501,266 @@ For more information about configuration options, please visit the Wiki https://
     color: rgb(255, 255, 255);
     margin-top: -20px;
 }
+
+.cpu-widget {
+    padding: 0 6px;
+}
+.cpu-widget .icon {
+    font-size: 17px;
+    color: var(--red);
+    margin: 0px 2px 0 0;
+}
+.cpu-widget .label {
+    color: var(--text1);
+}
+.cpu-widget .label.status-low {
+    color: var(--text1);
+}
+.cpu-widget .label.status-medium {
+    color: var(--yellow);
+}
+.cpu-widget .label.status-high {
+    color: var(--red);
+}
+.cpu-widget .label.status-critical {
+    color: var(--red);
+    font-weight: 700;
+} 
+
+.memory-widget {
+    padding: 0 6px;
+}
+.memory-widget .icon {
+    font-size: 17px;
+    color: var(--lavender);
+    margin: 0px 2px 0 0;
+}
+.memory-widget .label {
+    color: var(--text1);
+}
+.memory-widget .label.status-low {
+    color: var(--text1);
+}
+.memory-widget .label.status-medium {
+    color: var(--yellow);
+}
+.memory-widget .label.status-high {
+    color: var(--red);
+}
+.memory-widget .label.status-critical {
+    color: var(--red);
+    font-weight: 700;
+} 
+
+.battery-widget {
+    padding: 0 6px;
+}
+.battery-widget .icon {
+    font-size: 17px;
+    margin: 0px 2px 0 0;
+}
+.battery-widget .label {
+    color: var(--text1);
+}
+.battery-widget .icon.status-critical {
+    color: var(--red);
+    font-weight: 700;
+}
+.battery-widget .icon.status-low {
+    color: var(--red);
+}
+.battery-widget .icon.status-medium {
+    color: var(--yellow);
+}
+.battery-widget .icon.status-high {
+    color: var(--text1);
+}
+.battery-widget .icon.status-full {
+    color: var(--blue);
+}
+.battery-widget .icon.status-charging {
+    color: var(--blue);
+}
+.battery-widget .icon.status-charging.blink {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 49% {
+        opacity: 1;
+    }
+    50%, 100% {
+        opacity: 0.3;
+    }
+}
+
+/* Main widget styling */
+.traffic-widget {
+    padding: 0 6px;
+    min-width: 200px;
+    max-width: 200px;
+    width: 200px;
+}
+.traffic-widget .widget-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+}
+.traffic-widget .label {
+    color: var(--text1);
+    font-family: "JetBrainsMono NFP", monospace;
+    font-variant-numeric: tabular-nums;
+    width: 160px;
+    min-width: 160px;
+    max-width: 160px;
+    display: inline-block;
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.traffic-widget .label.offline {
+    color: var(--text4);
+}
+.traffic-widget .icon {
+    font-size: 17px;
+    color: var(--mauve);
+    margin: 0px 2px 0 0;
+    flex-shrink: 0;
+    width: 17px;
+}
+.traffic-widget .icon.offline {
+    color: var(--text4);
+}
+
+/* Menu styling */
+.traffic-menu {
+    background-color: var(--bg-color1);
+    border-radius: 8px;
+    border: 1px solid var(--bg-color2);
+    min-width: 320px;
+    padding: 12px;
+}
+.traffic-menu .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.traffic-menu .header .title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text1);
+    font-family: 'Segoe UI';
+}
+.traffic-menu .header .resset-button {
+    font-size: 11px;
+    color: var(--text3);
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: transparent;
+    font-family: 'Segoe UI';
+}
+.traffic-menu .header .resset-button:hover {
+    background-color: var(--bg-color2);
+    color: var(--text1);
+}
+.traffic-menu .interface-info {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 8px;
+    font-family: 'Segoe UI';
+}
+.traffic-menu .internet-info {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    font-family: 'Segoe UI';
+}
+.traffic-menu .internet-info.checking {
+    color: var(--text3);
+    background-color: rgba(128, 130, 158, 0.1);
+}
+.traffic-menu .internet-info.connected {
+    color: var(--blue);
+    background-color: rgba(68, 143, 255, 0.1);
+}
+.traffic-menu .internet-info.disconnected {
+    color: var(--red);
+    background-color: rgba(243, 139, 168, 0.1);
+}
+
+/* Section-specific styling */
+.traffic-menu .section {
+    margin-bottom: 12px;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: rgba(17, 17, 27, 0.2);
+}
+.traffic-menu .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI';
+}
+.traffic-menu .section.speeds-section {
+    background-color: rgba(68, 143, 255, 0.05);
+    border: 1px solid rgba(68, 143, 255, 0.1);
+}
+
+/* Speed columns styling */
+.traffic-menu .upload-speed,
+.traffic-menu .download-speed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Speed columns values and units styling */
+.traffic-menu .upload-speed-value,
+.traffic-menu .download-speed-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text1);
+    font-family: 'Segoe UI';
+}
+.traffic-menu .upload-speed-unit,
+.traffic-menu .download-speed-unit {
+    font-size: 10px;
+    color: var(--text3);
+    font-weight: 600;
+    font-family: 'Segoe UI';
+}
+.traffic-menu .upload-speed-placeholder,
+.traffic-menu .download-speed-placeholder {
+    font-size: 16px;
+    color: var(--text4);
+}
+
+/* Separator styling between upload and download speeds columns */
+.traffic-menu .speed-separator {
+    width: 1px;
+    background-color: rgba(128, 130, 158, 0.3);
+    margin: 0 12px;
+}
+
+/* Text labels styling */
+.traffic-menu .data-text {
+    font-size: 12px;
+    color: var(--text3);
+    font-weight: 600;
+    font-family: 'Segoe UI';
+}
+
+/* Value labels styling */
+.traffic-menu .data-value {
+    font-size: 13px;
+    color: var(--text1);
+    font-weight: 700;
+    font-family: 'Segoe UI';
+}
