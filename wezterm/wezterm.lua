@@ -6,6 +6,12 @@ local config = wezterm.config_builder and wezterm.config_builder() or {}
 -- Set PowerShell 7 as default shell
 config.default_prog = { "C:\\Program Files\\PowerShell\\7\\pwsh.exe" }
 
+-- Font configuration (Nerd Font for better icon support)
+config.font = wezterm.font('JetBrainsMono Nerd Font', { weight = 'Regular' })
+config.font_size = 11.0
+-- Enable ligatures for better code readability
+config.harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' }
+
 -- Optional: Set leader key (here, CTRL+SHIFT+SPACE)
 config.leader = { key = "Space", mods = "CTRL|SHIFT" }
 

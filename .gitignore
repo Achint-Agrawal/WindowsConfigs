@@ -48,6 +48,21 @@ scoop/config.json
 
 # Neovim transient data (keep config + lazy-lock for reproducibility)
 **/nvim/undodir/
+
+# VS Code device-specific data (don't sync these)
+vscode/globalStorage/
+vscode/workspaceStorage/
+vscode/History/
+vscode/*.vscdb
+vscode/*.vscdb.backup
+vscode/storage.json
+
+# VS Code extension-specific paths that may contain device-specific data
+vscode/globalStorage/ms-python.vscode-python-envs/
+vscode/globalStorage/ms-dotnettools.vscode-dotnet-runtime/
+vscode/globalStorage/ms-vscode-remote.remote-containers/
+vscode/globalStorage/github.copilot-chat/
+vscode/globalStorage/eamodio.gitlens/
 **/nvim/session*/
 **/nvim/.tests/
 
