@@ -11,7 +11,7 @@ komorebi:
 bars:
   primary-bar:
     enabled: true
-    screens: ["*"]
+    screens: ['AB23M215001BZ']
     class_name: "yasb-bar"
     alignment:
       position: "top"
@@ -54,6 +54,42 @@ bars:
       - "volume"
       - "battery"
       - "power_menu"
+  laptop-bar:
+    enabled: true
+    screens: ['\\.\DISPLAY1']
+    class_name: "yasb-bar"
+    alignment:
+      position: "top"
+      center: false
+    animation:
+      enabled: true
+      duration: 400
+    blur_effect:
+      enabled: false
+      acrylic: false
+      dark_mode: false
+      round_corners: false
+      round_corners_type: "normal"
+      border_color: "system"
+    window_flags:
+      always_on_top: false
+      windows_app_bar: true
+    dimensions:
+      width: "100%"
+      height: 32
+    padding:
+      top: 4
+      left: 4
+      bottom: 0
+      right: 4
+    widgets:
+      left:
+      - "komorebi_workspaces"
+      - "komorebi_active_layout"
+      - "active_window"
+      center:
+      - "clock"
+      right:
 widgets:
   home:
     type: "yasb.home.HomeWidget"
