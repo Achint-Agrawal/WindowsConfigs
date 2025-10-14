@@ -513,7 +513,7 @@ widgets:
         - pattern: "^(.+?)\\.exe$"
           replacement: "\\1"
           case: "lower"
-      animation: true
+      animation: false
       enable_scroll_switching : true
       container_shadow:
         enabled: true
