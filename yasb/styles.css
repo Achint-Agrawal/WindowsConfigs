@@ -764,3 +764,66 @@ For more information about configuration options, please visit the Wiki https://
     font-weight: 700;
     font-family: 'Segoe UI';
 }
+
+.komorebi-stack {
+    padding: 0 8px;
+}
+.komorebi-stack .widget-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.komorebi-stack .window {
+    border: none;
+    background-color: rgba(255, 255, 255, 0.05);
+    margin: 0 2px;
+    padding: 4px 8px;
+    min-height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+.komorebi-stack .window:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.komorebi-stack .window .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+}
+.komorebi-stack .window .icon {
+    font-size: 14px;
+    color: var(--text3);
+}
+.komorebi-stack .window.active {
+    background-color: var(--blue);
+    border: 1px solid rgba(68, 143, 255, 0.3);
+}
+.komorebi-stack .window.active .label {
+    color: #ffffff;
+    font-weight: 700;
+}
+.komorebi-stack .window.active .icon {
+    color: #ffffff;
+}
+.komorebi-stack .window.button-1 {
+    order: 1;
+}
+.komorebi-stack .window.button-2 {
+    order: 2;
+}
+.komorebi-stack .offline-status {
+    color: var(--text4);
+    font-size: 12px;
+    padding: 0 4px;
+    font-weight: 600;
+}
+.komorebi-stack .no-window {
+    color: var(--text4);
+    font-size: 12px;
+    padding: 0 4px;
+    font-weight: 600;
+    font-style: italic;
+}
