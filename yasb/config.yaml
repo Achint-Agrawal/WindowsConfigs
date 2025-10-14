@@ -504,8 +504,8 @@ widgets:
       label_zero_index: false
       show_icons: "always"
       icon_size: 14
-      max_length: 10
-      max_length_active: 20
+      max_length: 20
+      max_length_active: 50
       max_length_ellipsis: ".."
       hide_if_offline: false
       show_only_stack: false
