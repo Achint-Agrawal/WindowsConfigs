@@ -12,6 +12,8 @@ return {
       -- Optional: customize image rendering
       -- max_width = 0.8, -- 80% of window width
       -- max_height = 0.8, -- 80% of window height
+      auto_close = true, -- Close explorer after opening a file
+      jump = { close = true }, -- Ensures explorer closes when jumping to a file
     },
   },
 }
