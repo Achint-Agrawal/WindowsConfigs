@@ -376,8 +376,8 @@ widgets:
         on_middle: "do_nothing"
         on_right: "do_nothing"
       memory_thresholds:
-        low: 25
-        medium: 50
+        low: 50
+        medium: 70
         high: 90
       histogram_icons:
         - "\u2581" # 0%
