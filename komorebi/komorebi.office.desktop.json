@@ -74,6 +74,11 @@
               "id": "WindowsTerminal.exe",
               "kind": "Exe",
               "matching_strategy": "Equals"
+            },
+            {
+              "id": "wezterm-gui.exe",
+              "kind": "Exe",
+              "matching_strategy": "Equals"
             }
           ]
         },
