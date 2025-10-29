@@ -11,7 +11,7 @@ komorebi:
 bars:
   primary-bar:
     enabled: true
-    screens: ['AB23M215001BZ']
+    screens: ['AB23M215001BZ', 'LF22T35']
     class_name: "yasb-bar"
     alignment:
       position: "top"
