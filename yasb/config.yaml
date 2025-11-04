@@ -11,7 +11,7 @@ komorebi:
 bars:
   primary-bar:
     enabled: true
-    screens: ['AB23M215001BZ', 'LF22T35']
+    screens: ['AB23M215001BZ', 'LF22T35', 'DELL P2418D (1)']
     class_name: "yasb-bar"
     alignment:
       position: "top"
@@ -56,7 +56,7 @@ bars:
       - "power_menu"
   laptop-bar:
     enabled: true
-    screens: ['\\.\DISPLAY1']
+    screens: ['\\.\DISPLAY1', 'DELL P2418D (2)']
     class_name: "yasb-bar"
     alignment:
       position: "top"
