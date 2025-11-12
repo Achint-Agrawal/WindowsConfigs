@@ -118,6 +118,16 @@
       "id": "Save query?",
       "kind": "Title",
       "matching_strategy": "Equals"
+    },
+    {
+      "id": "Find and Replace",
+      "kind": "Title",
+      "matching_strategy": "Equals"
+    },
+    {
+      "id": "Clock",
+      "kind": "Title",
+      "matching_strategy": "Equals"
     }
   ],
   "display_index_preferences": {
