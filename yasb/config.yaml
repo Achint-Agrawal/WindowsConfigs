@@ -56,7 +56,7 @@ bars:
       - "power_menu"
   laptop-bar:
     enabled: true
-    screens: ['\\.\DISPLAY1', 'DELL P2418D (2)']
+    screens: ['\\.\DISPLAY1', 'DELL P2418D (2)', '\\.\DISPLAY5']
     class_name: "yasb-bar"
     alignment:
       position: "top"
