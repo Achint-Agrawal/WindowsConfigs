@@ -1,7 +1,7 @@
 # VS Code Configuration Symlink Setup Script
 # Run this script with administrator privileges when VS Code is CLOSED
 
-$repoVSCodePath = "C:\Users\acagrawal\.config\vscode"
+$repoVSCodePath = "$env:USERPROFILE\.config\vscode"
 $vscodeUserPath = "$env:APPDATA\Code\User"
 $backupPath = "$env:APPDATA\Code\User.backup"
 
