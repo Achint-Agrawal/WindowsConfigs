@@ -8,7 +8,7 @@
   "editor.defaultFormatter": "ms-python.autopep8",
   "diffEditor.renderSideBySide": false,
   "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "github.copilot.editor.enableAutoCompletions": true,
   "editor.cursorSurroundingLines": 10,
@@ -73,7 +73,7 @@
   "git.enableSmartCommit": true,
   "github.copilot.nextEditSuggestions.enabled": true,
   "yaml.schemas": {
-    "file:///c%3A/Users/acagrawal/.vscode/extensions/docsmsft.docs-yaml-1.0.5/dist/toc.schema.json": "/toc\\.yml/i"
+    "file:///c%3A/Users/acagrawal/.vscode/extensions/docsmsft.docs-yaml-1.0.6/dist/toc.schema.json": "/toc\\.yml/i"
   },
   "python.defaultInterpreterPath": "c:\\msys64\\ucrt64\\bin\\python.exe",
   "Microsoft.vscode-azdo-codereview.AdoOrganizations": [

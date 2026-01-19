@@ -85,10 +85,14 @@ alt + shift + 0         : komorebic move-to-named-workspace "X"
 # Config profile switching (komorebi) - ghar vs laptop
 # Uses script at $Env:KOMOREBI_CONFIG_HOME\switch-komorebi.ps1
 # Keybindings:
-#   alt + ctrl + g  -> ghar profile
-#   alt + ctrl + l  -> laptop profile
+#   alt + ctrl + g        -> ghar profile
+#   alt + ctrl + l        -> laptop profile
+#   alt + ctrl + h        -> home profile
+#   alt + ctrl + o        -> office.desktop profile
+#   alt + ctrl + shift + o -> laptop.office profile
 # ------------------------------------------------------------
 alt + ctrl + g          : powershell -NoProfile -ExecutionPolicy Bypass -File $Env:KOMOREBI_CONFIG_HOME/switch-komorebi.ps1 ghar
 alt + ctrl + l          : powershell -NoProfile -ExecutionPolicy Bypass -File $Env:KOMOREBI_CONFIG_HOME/switch-komorebi.ps1 laptop
 alt + ctrl + h          : powershell -NoProfile -ExecutionPolicy Bypass -File $Env:KOMOREBI_CONFIG_HOME/switch-komorebi.ps1 home
 alt + ctrl + o          : powershell -NoProfile -ExecutionPolicy Bypass -File $Env:KOMOREBI_CONFIG_HOME/switch-komorebi.ps1 office.desktop
+alt + ctrl + shift + o  : powershell -NoProfile -ExecutionPolicy Bypass -File $Env:KOMOREBI_CONFIG_HOME/switch-komorebi.ps1 laptop.office
