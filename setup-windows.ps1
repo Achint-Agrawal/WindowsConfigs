@@ -395,6 +395,14 @@ if (Get-Command komorebic -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 Write-Host "`n[8/$TotalSteps] YASB (status bar)..." -ForegroundColor Yellow
 
+# Stop YASB if running (to allow config changes and updates)
+$yasbProcess = Get-Process yasb -ErrorAction SilentlyContinue
+if ($yasbProcess) {
+    Write-Host "Stopping YASB..." -ForegroundColor Gray
+    Stop-Process -Name yasb -Force
+    Start-Sleep -Milliseconds 500
+}
+
 $YasbExe = "C:\Program Files\YASB\yasb.exe"
 $YasbInstalled = Test-Path $YasbExe
 
@@ -416,7 +424,14 @@ if ($YasbInstalled) {
 $YasbConfigSource = "$ConfigPath\yasb"
 $YasbConfigTarget = "$env:USERPROFILE\.config\yasb"
 
-if (Test-Path $YasbConfigSource) {
+# Check if source and target are the same (repo already in correct location)
+if ($YasbConfigSource -eq $YasbConfigTarget) {
+    if (Test-Path $YasbConfigSource) {
+        Write-Host "YASB config already in correct location." -ForegroundColor Green
+    } else {
+        Write-Host "YASB config folder not found. Skipping config setup." -ForegroundColor Gray
+    }
+} elseif (Test-Path $YasbConfigSource) {
     $existingLink = Get-Item $YasbConfigTarget -ErrorAction SilentlyContinue
     
     if ($existingLink -and ($existingLink.LinkType -eq "Junction" -or $existingLink.LinkType -eq "SymbolicLink")) {
