@@ -302,22 +302,29 @@ if (Get-Command wezterm -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 Write-Host "`n[7/$TotalSteps] Komorebi (tiling window manager)..." -ForegroundColor Yellow
 
+$KomorebiVersion = "0.1.38"
 $KomorebiInstalled = Get-Command komorebic -ErrorAction SilentlyContinue
 
 if ($KomorebiInstalled) {
-    Write-Host "Komorebi already installed. Checking for updates..." -ForegroundColor Gray
-    if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget upgrade LGUG2Z.komorebi -s winget --accept-package-agreements --accept-source-agreements 2>$null
-        winget upgrade LGUG2Z.whkd -s winget --accept-package-agreements --accept-source-agreements 2>$null
+    $currentVersion = (komorebic --version | Select-String -Pattern "komorebic (\d+\.\d+\.\d+)").Matches.Groups[1].Value
+    if ($currentVersion -eq $KomorebiVersion) {
+        Write-Host "Komorebi v$KomorebiVersion already installed." -ForegroundColor Green
+    } else {
+        Write-Host "Komorebi v$currentVersion installed, but v$KomorebiVersion required. Reinstalling..." -ForegroundColor Gray
+        # Stop komorebi if running
+        Get-Process komorebi, whkd -ErrorAction SilentlyContinue | Stop-Process -Force
+        Start-Sleep -Seconds 1
+        winget uninstall LGUG2Z.komorebi --accept-source-agreements 2>$null
+        winget install LGUG2Z.komorebi -s winget --version $KomorebiVersion --accept-package-agreements --accept-source-agreements
     }
 } else {
-    Write-Host "Installing Komorebi and whkd (hotkey daemon)..." -ForegroundColor Gray
+    Write-Host "Installing Komorebi v$KomorebiVersion and whkd..." -ForegroundColor Gray
     if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget install LGUG2Z.komorebi -s winget --accept-package-agreements --accept-source-agreements
+        winget install LGUG2Z.komorebi -s winget --version $KomorebiVersion --accept-package-agreements --accept-source-agreements
         winget install LGUG2Z.whkd -s winget --accept-package-agreements --accept-source-agreements
     } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
         scoop bucket add extras
-        scoop install komorebi whkd
+        scoop install komorebi@$KomorebiVersion whkd
     } else {
         Write-Warning "Neither winget nor scoop found. Install Komorebi manually from https://github.com/LGUG2Z/komorebi"
     }
