@@ -99,5 +99,9 @@
   "chat.agent.maxRequests": 100,
   "editor.fontFamily": "JetBrainsMono Nerd Font, 'Courier New', monospace",
   "editor.fontSize": 14,
-  "editor.fontLigatures": true
+  "editor.fontLigatures": true,
+  "devprod.vulnerability-extension.codeReview.adoOrganizations": [
+    "microsoft",
+    "msdata"
+  ]
 }
