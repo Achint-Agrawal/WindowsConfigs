@@ -339,7 +339,14 @@ if ($CurrentKomorebiConfigHome -ne $KomorebiConfigHome) {
 $WhkdrcSource = "$ConfigPath\whkdrc"
 $WhkdrcTarget = "$env:USERPROFILE\.config\whkdrc"
 
-if (Test-Path $WhkdrcSource) {
+# Check if source and target are the same (repo already in correct location)
+if ($WhkdrcSource -eq $WhkdrcTarget) {
+    if (Test-Path $WhkdrcSource) {
+        Write-Host "whkdrc already in correct location." -ForegroundColor Green
+    } else {
+        Write-Host "whkdrc not found. Skipping." -ForegroundColor Gray
+    }
+} elseif (Test-Path $WhkdrcSource) {
     $existingLink = Get-Item $WhkdrcTarget -ErrorAction SilentlyContinue
     
     if ($existingLink -and ($existingLink.LinkType -eq "SymbolicLink" -or $existingLink.LinkType -eq "HardLink")) {
@@ -352,6 +359,8 @@ if (Test-Path $WhkdrcSource) {
         New-Item -ItemType SymbolicLink -Path $WhkdrcTarget -Target $WhkdrcSource -Force | Out-Null
         Write-Host "whkdrc symlinked!" -ForegroundColor Green
     }
+} else {
+    Write-Host "whkdrc not found in repo. Skipping." -ForegroundColor Gray
 }
 
 # Create default komorebi.json symlink if it doesn't exist (defaults to home profile)
@@ -495,26 +504,24 @@ if (Test-Path $YasbExe) {
 # ------------------------------------------------------------------------------
 Write-Host "`n[9/$TotalSteps] Switcheroo (app switcher)..." -ForegroundColor Yellow
 
-$SwitcherooInstalled = Get-Command Switcheroo -ErrorAction SilentlyContinue
+# Check if Switcheroo is installed (it's a GUI app, may not be in PATH)
+$SwitcherooExe = "$env:LOCALAPPDATA\Switcheroo\Switcheroo.exe"
+$SwitcherooInstalled = (Test-Path $SwitcherooExe) -or (Get-Command Switcheroo -ErrorAction SilentlyContinue)
 
 if ($SwitcherooInstalled) {
     Write-Host "Switcheroo already installed. Checking for updates..." -ForegroundColor Gray
     if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget upgrade kvakulo.Switcheroo -s winget --accept-package-agreements --accept-source-agreements 2>$null
+        winget upgrade kvakulo.Switcheroo -s winget --accept-package-agreements --accept-source-agreements --include-unknown 2>$null
     }
+    Write-Host "Switcheroo ready." -ForegroundColor Green
 } else {
     Write-Host "Installing Switcheroo..." -ForegroundColor Gray
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         winget install kvakulo.Switcheroo -s winget --accept-package-agreements --accept-source-agreements
+        Write-Host "Switcheroo installed." -ForegroundColor Green
     } else {
         Write-Warning "winget not found. Install Switcheroo manually from https://github.com/kvakulo/Switcheroo"
     }
-}
-
-if (Get-Command Switcheroo -ErrorAction SilentlyContinue) {
-    Write-Host "Switcheroo ready." -ForegroundColor Green
-} else {
-    Write-Warning "Switcheroo may not be in PATH yet. You may need to restart your terminal."
 }
 
 # ------------------------------------------------------------------------------
