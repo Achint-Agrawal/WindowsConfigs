@@ -16,7 +16,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 }
 
 # Total steps for progress display
-$TotalSteps = 8
+$TotalSteps = 9
 
 # ------------------------------------------------------------------------------
 # Oh My Posh Installation
@@ -473,6 +473,33 @@ if (Test-Path $YasbExe) {
     Write-Host "YASB ready." -ForegroundColor Green
 } else {
     Write-Warning "YASB executable not found. It may need to be installed first."
+}
+
+# ------------------------------------------------------------------------------
+# Switcheroo Installation
+# ------------------------------------------------------------------------------
+Write-Host "`n[9/$TotalSteps] Switcheroo (app switcher)..." -ForegroundColor Yellow
+
+$SwitcherooInstalled = Get-Command Switcheroo -ErrorAction SilentlyContinue
+
+if ($SwitcherooInstalled) {
+    Write-Host "Switcheroo already installed. Checking for updates..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget upgrade kvakulo.Switcheroo -s winget --accept-package-agreements --accept-source-agreements 2>$null
+    }
+} else {
+    Write-Host "Installing Switcheroo..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install kvakulo.Switcheroo -s winget --accept-package-agreements --accept-source-agreements
+    } else {
+        Write-Warning "winget not found. Install Switcheroo manually from https://github.com/kvakulo/Switcheroo"
+    }
+}
+
+if (Get-Command Switcheroo -ErrorAction SilentlyContinue) {
+    Write-Host "Switcheroo ready." -ForegroundColor Green
+} else {
+    Write-Warning "Switcheroo may not be in PATH yet. You may need to restart your terminal."
 }
 
 # ------------------------------------------------------------------------------
