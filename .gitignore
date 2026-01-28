@@ -32,6 +32,8 @@ __pycache__/
 *.tar.gz
 *.7z
 *.bak
+*.msi
+*.exe
 
 # Editors / IDEs
 .vscode/
