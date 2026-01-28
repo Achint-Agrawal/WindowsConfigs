@@ -16,7 +16,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 }
 
 # Total steps for progress display
-$TotalSteps = 9
+$TotalSteps = 11
 
 # ------------------------------------------------------------------------------
 # Oh My Posh Installation
@@ -507,9 +507,238 @@ if (Test-Path $YasbExe) {
 }
 
 # ------------------------------------------------------------------------------
+# Neovim Dependencies (required for LazyVim plugins)
+# ------------------------------------------------------------------------------
+Write-Host "`n[9/$TotalSteps] Neovim dependencies..." -ForegroundColor Yellow
+
+# Python 3 (required for luarocks and some plugins)
+$PythonInstalled = Get-Command python -ErrorAction SilentlyContinue
+if ($PythonInstalled) {
+    $pythonVersion = (python --version 2>&1) -replace 'Python ', ''
+    Write-Host "Python already installed (v$pythonVersion)." -ForegroundColor Green
+} else {
+    Write-Host "Installing Python 3..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install Python.Python.3.12 -s winget --accept-package-agreements --accept-source-agreements
+        # Refresh PATH
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } else {
+        Write-Warning "winget not found. Install Python manually from https://python.org/"
+    }
+}
+
+# ripgrep (required for Snacks.picker.grep and LazyVim)
+$RgInstalled = Get-Command rg -ErrorAction SilentlyContinue
+if ($RgInstalled) {
+    Write-Host "ripgrep already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing ripgrep..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install BurntSushi.ripgrep.MSVC -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+        scoop install ripgrep
+    } else {
+        Write-Warning "Neither winget nor scoop found. Install ripgrep manually."
+    }
+}
+
+# fd (required for Snacks.picker.files and explorer)
+$FdInstalled = Get-Command fd -ErrorAction SilentlyContinue
+if ($FdInstalled) {
+    Write-Host "fd already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing fd..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install sharkdp.fd -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+        scoop install fd
+    } else {
+        Write-Warning "Neither winget nor scoop found. Install fd manually."
+    }
+}
+
+# lazygit (required for Snacks.lazygit)
+$LazygitInstalled = Get-Command lazygit -ErrorAction SilentlyContinue
+if ($LazygitInstalled) {
+    Write-Host "lazygit already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing lazygit..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install JesseDuffield.lazygit -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+        scoop install lazygit
+    } else {
+        Write-Warning "Neither winget nor scoop found. Install lazygit manually."
+    }
+}
+
+# fzf (fuzzy finder, required for LazyVim)
+$FzfInstalled = Get-Command fzf -ErrorAction SilentlyContinue
+if ($FzfInstalled) {
+    Write-Host "fzf already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing fzf..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install junegunn.fzf -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+        scoop install fzf
+    } else {
+        Write-Warning "Neither winget nor scoop found. Install fzf manually."
+    }
+}
+
+# C Compiler (required for nvim-treesitter parser compilation)
+$GccInstalled = Get-Command gcc -ErrorAction SilentlyContinue
+if ($GccInstalled) {
+    Write-Host "C compiler (gcc) already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing C compiler (WinLibs/MinGW)..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install BrechtSanders.WinLibs.POSIX.UCRT -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } else {
+        Write-Warning "winget not found. Install WinLibs manually from https://winlibs.com/"
+    }
+}
+
+# ImageMagick (required for Snacks.image to convert images)
+$MagickInstalled = Get-Command magick -ErrorAction SilentlyContinue
+if ($MagickInstalled) {
+    Write-Host "ImageMagick already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing ImageMagick..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install ImageMagick.ImageMagick -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } else {
+        Write-Warning "winget not found. Install ImageMagick manually."
+    }
+}
+
+# Ghostscript (required for PDF rendering in Snacks.image)
+$GsInstalled = Get-Command gs -ErrorAction SilentlyContinue
+if (-not $GsInstalled) {
+    # Also check for gswin64c which is the Windows executable name
+    $GsInstalled = Get-Command gswin64c -ErrorAction SilentlyContinue
+}
+if ($GsInstalled) {
+    Write-Host "Ghostscript already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing Ghostscript..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install ArtifexSoftware.GhostScript -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } else {
+        Write-Warning "winget not found. Install Ghostscript manually."
+    }
+}
+
+# neovim npm package (required for Node.js provider)
+if (Get-Command npm -ErrorAction SilentlyContinue) {
+    $neovimNpmInstalled = npm list -g neovim 2>$null | Select-String "neovim"
+    if ($neovimNpmInstalled) {
+        Write-Host "neovim npm package already installed." -ForegroundColor Green
+    } else {
+        Write-Host "Installing neovim npm package..." -ForegroundColor Gray
+        npm install -g neovim
+        Write-Host "neovim npm package installed." -ForegroundColor Green
+    }
+} else {
+    Write-Host "npm not found. Skipping neovim npm package." -ForegroundColor Gray
+}
+
+Write-Host "Neovim dependencies ready." -ForegroundColor Green
+
+# ------------------------------------------------------------------------------
+# Neovim / LazyVim Installation
+# ------------------------------------------------------------------------------
+Write-Host "`n[10/$TotalSteps] Neovim / LazyVim..." -ForegroundColor Yellow
+
+$NeovimInstalled = Get-Command nvim -ErrorAction SilentlyContinue
+
+if ($NeovimInstalled) {
+    $currentVersion = (nvim --version | Select-Object -First 1) -replace 'NVIM v', ''
+    Write-Host "Neovim already installed (v$currentVersion). Checking for updates..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget upgrade Neovim.Neovim -s winget --accept-package-agreements --accept-source-agreements 2>$null
+    }
+} else {
+    Write-Host "Installing Neovim..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install Neovim.Neovim -s winget --accept-package-agreements --accept-source-agreements
+    } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+        scoop install neovim
+    } else {
+        Write-Warning "Neither winget nor scoop found. Install Neovim manually from https://neovim.io/"
+    }
+    
+    # Refresh PATH
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+}
+
+# LazyVim config is already in this repo at ~/.config/nvim
+# Neovim on Windows looks for config at ~/AppData/Local/nvim by default
+# We need to symlink it
+$NvimConfigSource = "$ConfigPath\nvim"
+$NvimConfigTarget = "$env:LOCALAPPDATA\nvim"
+
+if (Test-Path $NvimConfigSource) {
+    $existingLink = Get-Item $NvimConfigTarget -ErrorAction SilentlyContinue
+    
+    if ($existingLink -and ($existingLink.LinkType -eq "Junction" -or $existingLink.LinkType -eq "SymbolicLink")) {
+        $target = $existingLink.Target
+        if ($target -eq $NvimConfigSource) {
+            Write-Host "Neovim config already symlinked." -ForegroundColor Green
+        } else {
+            Write-Host "Neovim config folder is linked to: $target" -ForegroundColor Gray
+        }
+    } elseif (Test-Path $NvimConfigTarget) {
+        # Nvim config exists but is not a symlink - backup and symlink
+        $backupPath = "$env:LOCALAPPDATA\nvim.backup"
+        if (-not (Test-Path $backupPath)) {
+            Move-Item $NvimConfigTarget $backupPath -Force
+            Write-Host "Backed up existing Neovim config to: $backupPath" -ForegroundColor Gray
+        } else {
+            Remove-Item $NvimConfigTarget -Recurse -Force
+        }
+        New-Item -ItemType Junction -Path $NvimConfigTarget -Target $NvimConfigSource -Force | Out-Null
+        Write-Host "Neovim config symlinked (LazyVim will install on first launch)." -ForegroundColor Green
+    } else {
+        New-Item -ItemType Junction -Path $NvimConfigTarget -Target $NvimConfigSource -Force | Out-Null
+        Write-Host "Neovim config symlinked (LazyVim will install on first launch)." -ForegroundColor Green
+    }
+} else {
+    Write-Host "Neovim config folder not found in repo. Skipping config symlink." -ForegroundColor Gray
+}
+
+if (Get-Command nvim -ErrorAction SilentlyContinue) {
+    Write-Host "Neovim ready. Run 'nvim' to launch (LazyVim plugins install automatically)." -ForegroundColor Green
+} else {
+    Write-Warning "Neovim may not be in PATH yet. You may need to restart your terminal."
+}
+
+# Install tree-sitter-cli (required for Neovim tree-sitter parser compilation)
+if (Get-Command npm -ErrorAction SilentlyContinue) {
+    $treeSitterInstalled = Get-Command tree-sitter -ErrorAction SilentlyContinue
+    if (-not $treeSitterInstalled) {
+        Write-Host "Installing tree-sitter-cli..." -ForegroundColor Gray
+        npm install -g tree-sitter-cli
+        Write-Host "tree-sitter-cli installed." -ForegroundColor Green
+    } else {
+        Write-Host "tree-sitter-cli already installed." -ForegroundColor Green
+    }
+} else {
+    Write-Warning "npm not found. tree-sitter-cli requires Node.js/npm to install."
+}
+
+# ------------------------------------------------------------------------------
 # Switcheroo Installation
 # ------------------------------------------------------------------------------
-Write-Host "`n[9/$TotalSteps] Switcheroo (app switcher)..." -ForegroundColor Yellow
+Write-Host "`n[11/$TotalSteps] Switcheroo (app switcher)..." -ForegroundColor Yellow
 
 # Check if Switcheroo is installed (it's a GUI app, may not be in PATH)
 $SwitcherooExe = "$env:LOCALAPPDATA\Switcheroo\Switcheroo.exe"
