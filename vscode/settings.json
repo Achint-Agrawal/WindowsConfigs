@@ -75,7 +75,7 @@
   "yaml.schemas": {
     "file:///c%3A/Users/acagrawal/.vscode/extensions/docsmsft.docs-yaml-1.0.6/dist/toc.schema.json": "/toc\\.yml/i"
   },
-  "python.defaultInterpreterPath": "c:\\msys64\\ucrt64\\bin\\python.exe",
+  "python.defaultInterpreterPath": "c:\\Users\\acagrawal\\AppData\\Local\\Microsoft\\WindowsApps\\python3.11.exe",
   "Microsoft.vscode-azdo-codereview.AdoOrganizations": [
     "microsoft",
     "msdata"
@@ -103,5 +103,6 @@
   "devprod.vulnerability-extension.codeReview.adoOrganizations": [
     "microsoft",
     "msdata"
-  ]
+  ],
+  "python.analysis.typeCheckingMode": "basic"
 }
