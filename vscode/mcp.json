@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"kql-builder": {
+			"url": "http://172.176.135.150:8000/sse",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}
