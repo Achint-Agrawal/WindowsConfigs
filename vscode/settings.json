@@ -23,6 +23,7 @@
   "extensions.experimental.affinity": {
     "asvetliakov.vscode-neovim": 1
   },
+  "vscode-neovim.neovimInitVimPaths.win32": "~/.config/nvim/init.lua",
   "security.workspace.trust.untrustedFiles": "open",
   "redhat.telemetry.enabled": false,
   "editor.formatOnType": true,
