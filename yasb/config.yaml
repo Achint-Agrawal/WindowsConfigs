@@ -89,7 +89,7 @@ bars:
       - "komorebi_stack"
       center:
       - "clock"
-      right:
+      right: []
 widgets:
   home:
     type: "yasb.home.HomeWidget"

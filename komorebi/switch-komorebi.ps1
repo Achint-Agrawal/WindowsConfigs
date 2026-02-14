@@ -12,7 +12,7 @@ Get-Process yasb -ErrorAction SilentlyContinue | Stop-Process -Force
 
 # Start or restart komorebi with the new config
 if (Get-Process komorebi -ErrorAction SilentlyContinue) {
-    komorebic stop --whkd | Out-Null
+    komorebic stop --whkd --bar | Out-Null
     Start-Sleep -Milliseconds 500
 }
 komorebic start --whkd --config $target | Out-Null

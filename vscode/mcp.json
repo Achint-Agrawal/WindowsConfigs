@@ -3,6 +3,16 @@
 		"kql-builder": {
 			"url": "http://172.176.135.150:8000/sse",
 			"type": "http"
+		},
+		"bluebird-cosmosdb": {
+			"url": "https://mcp.bluebird-ai.net/",
+			"type": "http",
+			"headers": {
+				"x-mcp-ec-organization": "msdata",
+				"x-mcp-ec-project": "CosmosDB",
+				"x-mcp-ec-repository": "CosmosDB",
+				"x-mcp-ec-branch": "master"
+			}
 		}
 	},
 	"inputs": []
