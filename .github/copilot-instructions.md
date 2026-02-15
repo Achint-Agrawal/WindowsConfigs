@@ -1,50 +1,37 @@
 # Copilot Instructions
 
-This is a Windows dotfiles repository containing configuration for development tools and a tiling window manager setup.
+Windows dotfiles repo — tiling WM setup, terminal configs, and editor settings all managed via symlinks from `~/.config`.
 
-## Repository Structure
+## Architecture
 
-- **`setup-windows.ps1`** - Main idempotent setup script that configures a fresh Windows machine
-- **`komorebi/`** - Tiling window manager configs (multiple profiles for different monitor setups)
-- **`whkdrc`** - Hotkey daemon config for Komorebi keyboard shortcuts
-- **`yasb/`** - Status bar (Yet Another Status Bar) config
-- **`wezterm/`** - Terminal emulator config (Lua)
-- **`nvim/`** - Neovim config (LazyVim-based)
-- **`vscode/`** - VS Code settings (symlinked to `%APPDATA%\Code\User`)
-- **`ohmyposh/`** - PowerShell prompt theme
+**Config-as-symlinks:** All configs live in this repo and are symlinked to their expected system locations. Edits here take effect immediately. `setup-windows.ps1` is the idempotent bootstrap script that installs tools (via Scoop/winget), creates symlinks, and registers autostart tasks.
+
+**Komorebi multi-profile system:** Each `komorebi/komorebi.<profile>.json` defines a complete monitor/workspace layout for a specific environment (home, laptop, office, etc.). `switch-komorebi.ps1 <profile>` stops YASB → restarts komorebi with the new config → re-applies workspace names (race condition fix) → restarts YASB. The `ValidateSet` in that script must be updated when adding new profiles. `komorebi.json` is a gitignored symlink to the active profile. `applications.json` holds per-app tiling rules shared across all profiles.
+
+**Neovim:** LazyVim-based config. Custom plugins go in `nvim/lua/plugins/`. Uses Lazy.nvim for plugin management with `lazy-lock.json` tracked for reproducibility.
 
 ## Key Conventions
 
-### Komorebi Profiles
-Multiple Komorebi configs exist for different environments (`komorebi.home.json`, `komorebi.laptop.json`, etc.). The active config is controlled via:
-- `switch-komorebi.ps1 <profile>` - Switches profile and restarts services
-- `komorebi.json` is a symlink to the active profile (gitignored)
-- Profiles are switched via whkd shortcuts: `Alt+Ctrl+H` (home), `Alt+Ctrl+L` (laptop), etc.
+- **Vim-style keybindings everywhere:** `hjkl` navigation in whkdrc (`Alt+`), WezTerm (`Ctrl+` for panes, `Alt+` for resize), and Neovim.
+- **JetBrainsMono Nerd Font** is the universal font across WezTerm, VS Code, Oh My Posh, and YASB.
+- **Workspace naming:** Roman numerals I–X across all Komorebi profiles and YASB bar labels.
+- **BSP layout** (Binary Space Partitioning) is the default for all Komorebi workspaces.
+- **Profile switching shortcuts** in whkdrc: `Alt+Ctrl+G` (ghar), `Alt+Ctrl+L` (laptop), `Alt+Ctrl+H` (home), `Alt+Ctrl+O` (office).
 
-### Symlink Strategy
-Configs are symlinked from this repo to their expected locations:
-- VS Code: `%APPDATA%\Code\User` → `~/.config/vscode` (junction)
-- WezTerm: `~/.wezterm.lua` → `~/.config/wezterm/wezterm.lua` (symlink)
-- whkdrc: Already at `~/.config/whkdrc` (expected location)
-- YASB: Already at `~/.config/yasb` (expected location)
+## Symlink Map
 
-### Environment Variables
-- `KOMOREBI_CONFIG_HOME` must point to `~/.config/komorebi`
-
-### Keyboard Shortcuts (whkdrc)
-Uses vim-style navigation throughout:
-- `Alt+H/J/K/L` - Focus windows (left/down/up/right)
-- `Alt+Shift+H/J/K/L` - Move windows
-- `Alt+1-0` - Switch to workspace I-X
-- `Alt+Shift+1-0` - Move window to workspace
-
-### Font Requirement
-All terminal apps use **JetBrainsMono Nerd Font** for icon support.
+| System Location | Repo Path | Type |
+|---|---|---|
+| `%APPDATA%\Code\User` | `vscode/` | junction |
+| `~/.wezterm.lua` | `wezterm/wezterm.lua` | symlink |
+| `~/.config/whkdrc` | `whkdrc` | in-place |
+| `~/.config/yasb` | `yasb/` | in-place |
+| `$KOMOREBI_CONFIG_HOME` | `komorebi/` | env var |
 
 ## Making Changes
 
-When modifying configs:
-1. Edit files directly in this repo (symlinks make changes live)
-2. For Komorebi changes, run `komorebic reload-configuration` or `Alt+Shift+R`
-3. For YASB, restart the service or modify with `watch_config: true` enabled
-4. Test PowerShell scripts with `-WhatIf` when available
+- **Komorebi:** `komorebic reload-configuration` or `Alt+Shift+R` after editing profiles.
+- **YASB:** Restart the process, or rely on `watch_config: true` if enabled.
+- **VS Code:** Changes via the junction are live in both directions.
+- **PowerShell scripts:** Use `-WhatIf` when available to test before running.
+- **New Komorebi profile:** Create `komorebi/komorebi.<name>.json`, add `<name>` to the `ValidateSet` in `switch-komorebi.ps1`, and add a whkd shortcut in `whkdrc`.

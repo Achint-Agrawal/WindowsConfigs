@@ -512,11 +512,19 @@ if (Test-Path $YasbExe) {
 Write-Host "`n[9/$TotalSteps] Neovim dependencies..." -ForegroundColor Yellow
 
 # Python 3 (required for luarocks and some plugins)
-$PythonInstalled = Get-Command python -ErrorAction SilentlyContinue
-if ($PythonInstalled) {
-    $pythonVersion = (python --version 2>&1) -replace 'Python ', ''
-    Write-Host "Python already installed (v$pythonVersion)." -ForegroundColor Green
-} else {
+$PythonInstalled = $false
+try {
+    $pythonVersionOutput = (python --version 2>&1) | Out-String
+    if ($pythonVersionOutput -match 'Python (\d+\.\d+\.\d+)') {
+        $PythonInstalled = $true
+        $pythonVersion = $matches[1]
+        Write-Host "Python already installed (v$pythonVersion)." -ForegroundColor Green
+    }
+} catch {
+    # Python not available
+}
+
+if (-not $PythonInstalled) {
     Write-Host "Installing Python 3..." -ForegroundColor Gray
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         winget install Python.Python.3.12 -s winget --accept-package-agreements --accept-source-agreements
