@@ -1,109 +1,16 @@
 {
-  "terminal.integrated.sendKeybindingsToShell": true,
-  "[python]": {
-    "editor.formatOnType": true
-  },
-  "git.autofetch": true,
-  "editor.renderWhitespace": "all",
-  "editor.defaultFormatter": "ms-python.autopep8",
-  "diffEditor.renderSideBySide": false,
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "github.copilot.editor.enableAutoCompletions": true,
-  "editor.cursorSurroundingLines": 10,
-  "json.schemas": [
-    {
-      "fileMatch": [
-        "/myfile"
-      ],
-      "url": "https://raw.githubusercontent.com/LGUG2Z/komorebi/master/schema.json"
-    }
-  ],
-  "extensions.experimental.affinity": {
-    "asvetliakov.vscode-neovim": 1
-  },
-  "vscode-neovim.neovimInitVimPaths.win32": "~/.config/nvim/init.lua",
-  "security.workspace.trust.untrustedFiles": "open",
-  "redhat.telemetry.enabled": false,
-  "editor.formatOnType": true,
-  "editor.formatOnSaveMode": "modificationsIfAvailable",
-  "latex-workshop.view.pdf.viewer": "tab",
-  "latex-workshop.latex.autoBuild.run": "onFileChange",
-  "latex-workshop.synctex.afterBuild.enabled": true,
-  "latex-workshop.latex.recipes": [
-    {
-      "name": "latexmk",
-      "tools": [
-        "latexmk"
-      ]
-    }
-  ],
-  "latex-workshop.latex.tools": [
-    {
-      "name": "latexmk",
-      "command": "latexmk",
-      "args": [
-        "-synctex=1",
-        "-interaction=nonstopmode",
-        "-file-line-error",
-        "-pdf",
-        "%DOC%"
-      ]
-    }
-  ],
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml"
-  },
-  "editor.lineNumbers": "relative",
-  "[javascript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  },
-  "diffEditor.experimental.showMoves": true,
-  "diffEditor.ignoreTrimWhitespace": false,
-  "git.confirmSync": false,
-  "github.copilot.enable": {
-    "*": true,
-    "plaintext": false,
-    "markdown": false,
-    "scminput": false
-  },
-  "git.enableSmartCommit": true,
-  "github.copilot.nextEditSuggestions.enabled": true,
-  "yaml.schemas": {
-    "file:///c%3A/Users/acagrawal/.vscode/extensions/docsmsft.docs-yaml-1.0.6/dist/toc.schema.json": "/toc\\.yml/i"
-  },
-  "python.defaultInterpreterPath": "c:\\msys64\\ucrt64\\bin\\python.exe",
-  "Microsoft.vscode-azdo-codereview.AdoOrganizations": [
-    "microsoft",
-    "msdata"
-  ],
-  "remote.SSH.localServerDownload": "auto",
-  "[dockercompose]": {
-    "editor.insertSpaces": true,
-    "editor.tabSize": 2,
-    "editor.autoIndent": "advanced",
-    "editor.quickSuggestions": {
-      "other": true,
-      "comments": false,
-      "strings": true
+    "redhat.telemetry.enabled": false,
+    "devprod.vulnerability-extension.codeReview.adoOrganizations": [
+        "microsoft",
+        "msdata"
+    ],
+    "chat.agent.maxRequests": 100,
+    "search.followSymlinks": false,
+    "diffEditor.renderSideBySide": false,
+    "git.autofetch": true,
+    "yaml.schemas": {
+        "file:///c%3A/Users/acagrawal/.vscode/extensions/docsmsft.docs-yaml-1.0.6/dist/toc.schema.json": "/toc\\.yml/i"
     },
-    "editor.defaultFormatter": "redhat.vscode-yaml"
-  },
-  "[github-actions-workflow]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml"
-  },
-  "chat.mcp.autostart": "newAndOutdated",
-  "chat.agent.maxRequests": 100,
-  "editor.fontFamily": "JetBrainsMono Nerd Font, 'Courier New', monospace",
-  "editor.fontSize": 14,
-  "editor.fontLigatures": true,
-  "devprod.vulnerability-extension.codeReview.adoOrganizations": [
-    "microsoft",
-    "msdata"
-  ],
-  "python.analysis.typeCheckingMode": "basic"
+    "gitlens.ai.model": "vscode",
+    "gitlens.ai.vscode.model": "copilot:gpt-4.1"
 }

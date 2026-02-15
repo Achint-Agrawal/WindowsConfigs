@@ -52,6 +52,7 @@ scoop/config.json
 **/nvim/undodir/
 
 # VS Code device-specific data (don't sync these)
+vscode/sync/
 vscode/globalStorage/
 vscode/workspaceStorage/
 vscode/History/
