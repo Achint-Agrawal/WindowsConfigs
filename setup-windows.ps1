@@ -16,7 +16,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 }
 
 # Total steps for progress display
-$TotalSteps = 11
+$TotalSteps = 13
 
 # ------------------------------------------------------------------------------
 # Oh My Posh Installation
@@ -237,9 +237,39 @@ if (-not (Test-Path $repoVSCodePath)) {
 }
 
 # ------------------------------------------------------------------------------
+# PowerShell 7 Installation
+# ------------------------------------------------------------------------------
+Write-Host "`n[6/$TotalSteps] PowerShell 7..." -ForegroundColor Yellow
+
+$Pwsh7Installed = Get-Command pwsh -ErrorAction SilentlyContinue
+
+if ($Pwsh7Installed) {
+    $pwsh7Version = (pwsh --version) -replace 'PowerShell ', ''
+    Write-Host "PowerShell 7 already installed (v$pwsh7Version). Checking for updates..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget upgrade Microsoft.PowerShell -s winget --accept-package-agreements --accept-source-agreements 2>$null
+    }
+} else {
+    Write-Host "Installing PowerShell 7 (required by WezTerm config)..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install Microsoft.PowerShell -s winget --accept-package-agreements --accept-source-agreements
+    } else {
+        Write-Warning "winget not found. Install PowerShell 7 manually from https://github.com/PowerShell/PowerShell"
+    }
+    # Refresh PATH
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+}
+
+if (Get-Command pwsh -ErrorAction SilentlyContinue) {
+    Write-Host "PowerShell 7 ready." -ForegroundColor Green
+} else {
+    Write-Warning "PowerShell 7 may not be in PATH yet. You may need to restart your terminal."
+}
+
+# ------------------------------------------------------------------------------
 # WezTerm Installation & Configuration
 # ------------------------------------------------------------------------------
-Write-Host "`n[6/$TotalSteps] WezTerm..." -ForegroundColor Yellow
+Write-Host "`n[7/$TotalSteps] WezTerm..." -ForegroundColor Yellow
 
 $WezTermInstalled = Get-Command wezterm -ErrorAction SilentlyContinue
 
@@ -300,7 +330,7 @@ if (Get-Command wezterm -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # Komorebi Installation & Configuration
 # ------------------------------------------------------------------------------
-Write-Host "`n[7/$TotalSteps] Komorebi (tiling window manager)..." -ForegroundColor Yellow
+Write-Host "`n[8/$TotalSteps] Komorebi (tiling window manager)..." -ForegroundColor Yellow
 
 $KomorebiVersion = "0.1.38"
 $KomorebiInstalled = Get-Command komorebic -ErrorAction SilentlyContinue
@@ -409,7 +439,7 @@ if (Get-Command komorebic -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # YASB (Yet Another Status Bar) Installation & Configuration
 # ------------------------------------------------------------------------------
-Write-Host "`n[8/$TotalSteps] YASB (status bar)..." -ForegroundColor Yellow
+Write-Host "`n[9/$TotalSteps] YASB (status bar)..." -ForegroundColor Yellow
 
 # Stop YASB if running (to allow config changes and updates)
 $yasbProcess = Get-Process yasb -ErrorAction SilentlyContinue
@@ -509,7 +539,7 @@ if (Test-Path $YasbExe) {
 # ------------------------------------------------------------------------------
 # Neovim Dependencies (required for LazyVim plugins)
 # ------------------------------------------------------------------------------
-Write-Host "`n[9/$TotalSteps] Neovim dependencies..." -ForegroundColor Yellow
+Write-Host "`n[10/$TotalSteps] Neovim dependencies..." -ForegroundColor Yellow
 
 # Python 3 (required for luarocks and some plugins)
 $PythonInstalled = $false
@@ -664,7 +694,7 @@ Write-Host "Neovim dependencies ready." -ForegroundColor Green
 # ------------------------------------------------------------------------------
 # Neovim / LazyVim Installation
 # ------------------------------------------------------------------------------
-Write-Host "`n[10/$TotalSteps] Neovim / LazyVim..." -ForegroundColor Yellow
+Write-Host "`n[11/$TotalSteps] Neovim / LazyVim..." -ForegroundColor Yellow
 
 $NeovimInstalled = Get-Command nvim -ErrorAction SilentlyContinue
 
@@ -746,7 +776,7 @@ if (Get-Command npm -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # Switcheroo Installation
 # ------------------------------------------------------------------------------
-Write-Host "`n[11/$TotalSteps] Switcheroo (app switcher)..." -ForegroundColor Yellow
+Write-Host "`n[12/$TotalSteps] Switcheroo (app switcher)..." -ForegroundColor Yellow
 
 # Check if Switcheroo is installed (it's a GUI app, may not be in PATH)
 $SwitcherooExe = "$env:LOCALAPPDATA\Switcheroo\Switcheroo.exe"
@@ -769,6 +799,69 @@ if ($SwitcherooInstalled) {
 }
 
 # ------------------------------------------------------------------------------
+# AutoHotkey Installation & UTC.ahk Autostart
+# ------------------------------------------------------------------------------
+Write-Host "`n[13/$TotalSteps] AutoHotkey (UTC.ahk)..." -ForegroundColor Yellow
+
+$AhkInstalled = Get-Command autohotkey -ErrorAction SilentlyContinue
+
+if ($AhkInstalled) {
+    Write-Host "AutoHotkey already installed." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget upgrade AutoHotkey.AutoHotkey -s winget --accept-package-agreements --accept-source-agreements 2>$null
+    }
+} else {
+    Write-Host "Installing AutoHotkey..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install AutoHotkey.AutoHotkey -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+        scoop install autohotkey
+    } else {
+        Write-Warning "Neither winget nor scoop found. Install AutoHotkey manually from https://www.autohotkey.com/"
+    }
+}
+
+# Register UTC.ahk autostart (scheduled task)
+$AhkScript = "$ConfigPath\UTC.ahk"
+if (Test-Path $AhkScript) {
+    $taskName = 'UTC.ahk Autostart'
+    $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+
+    if ($existingTask) {
+        Write-Host "UTC.ahk autostart task already registered." -ForegroundColor Green
+    } else {
+        Write-Host "Registering UTC.ahk autostart task..." -ForegroundColor Gray
+        try {
+            # Find AutoHotkey executable
+            $ahkExe = (Get-Command autohotkey -ErrorAction SilentlyContinue).Source
+            if (-not $ahkExe) {
+                # Common install locations
+                $ahkExe = "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe"
+                if (-not (Test-Path $ahkExe)) {
+                    $ahkExe = "C:\Program Files\AutoHotkey\AutoHotkey.exe"
+                }
+            }
+
+            if ($ahkExe -and (Test-Path $ahkExe)) {
+                $action = New-ScheduledTaskAction -Execute $ahkExe -Argument "`"$AhkScript`""
+                $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
+                $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan)
+                Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Description "Launch UTC.ahk time conversion script at user logon" | Out-Null
+                Write-Host "UTC.ahk autostart task registered!" -ForegroundColor Green
+            } else {
+                Write-Warning "AutoHotkey executable not found. Cannot register autostart task."
+            }
+        } catch {
+            Write-Warning "Failed to register UTC.ahk autostart task: $_"
+        }
+    }
+    Write-Host "AutoHotkey ready." -ForegroundColor Green
+} else {
+    Write-Host "UTC.ahk not found at $AhkScript. Skipping autostart." -ForegroundColor Gray
+}
+
+# ------------------------------------------------------------------------------
 # Done
 # ------------------------------------------------------------------------------
 Write-Host "`n=== Setup Complete ===" -ForegroundColor Cyan
@@ -781,3 +874,4 @@ Write-Host "      Alt+Ctrl+H = home, Alt+Ctrl+G = ghar, Alt+Ctrl+L = laptop" -Fo
 Write-Host "      Alt+Ctrl+O = office.desktop, Alt+Ctrl+Shift+O = laptop.office" -ForegroundColor Gray
 Write-Host "  - WezTerm: Launch from Start Menu or run 'wezterm'" -ForegroundColor Gray
 Write-Host "  - YASB: Starts automatically at login, or run from Program Files" -ForegroundColor Gray
+Write-Host "  - UTC.ahk: Starts automatically at login (Alt+U=UTC, Alt+I=IST, Alt+P=PST/PDT)" -ForegroundColor Gray
