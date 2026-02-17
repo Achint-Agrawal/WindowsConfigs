@@ -15,13 +15,18 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
     exit 1
 }
 
-# Total steps for progress display
-$TotalSteps = 13
+# Step counter for progress display (auto-increments — no need to renumber steps)
+$script:CurrentStep = 0
+$TotalSteps = 14
+function Write-Step($label) {
+    $script:CurrentStep++
+    Write-Host "`n[$script:CurrentStep/$TotalSteps] $label" -ForegroundColor Yellow
+}
 
 # ------------------------------------------------------------------------------
 # Oh My Posh Installation
 # ------------------------------------------------------------------------------
-Write-Host "`n[1/$TotalSteps] Oh My Posh..." -ForegroundColor Yellow
+Write-Step "Oh My Posh..."
 
 $OhMyPoshInstalled = Get-Command oh-my-posh -ErrorAction SilentlyContinue
 
@@ -55,7 +60,7 @@ if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # JetBrains Mono Nerd Font Installation
 # ------------------------------------------------------------------------------
-Write-Host "`n[2/$TotalSteps] JetBrains Mono Nerd Font..." -ForegroundColor Yellow
+Write-Step "JetBrains Mono Nerd Font..."
 
 $FontsFolder = "$env:LOCALAPPDATA\Microsoft\Windows\Fonts"
 $SystemFontsFolder = "$env:WINDIR\Fonts"
@@ -90,7 +95,7 @@ if ($FontInstalled) {
 # ------------------------------------------------------------------------------
 # PowerShell Profile Configuration
 # ------------------------------------------------------------------------------
-Write-Host "`n[3/$TotalSteps] PowerShell profile..." -ForegroundColor Yellow
+Write-Step "PowerShell profile..."
 
 $OhMyPoshConfig = "$ConfigPath\ohmyposh\config.json"
 $ProfileLine = "oh-my-posh init pwsh --config `"$OhMyPoshConfig`" | Invoke-Expression"
@@ -125,7 +130,7 @@ Write-Host "Profile: $PROFILE" -ForegroundColor Gray
 # ------------------------------------------------------------------------------
 # Windows Terminal Font Configuration
 # ------------------------------------------------------------------------------
-Write-Host "`n[4/$TotalSteps] Windows Terminal font..." -ForegroundColor Yellow
+Write-Step "Windows Terminal font..."
 
 $WTSettingsPath = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 $FontName = "JetBrainsMono Nerd Font"
@@ -183,9 +188,38 @@ if (Test-Path $WTSettingsPath) {
 }
 
 # ------------------------------------------------------------------------------
+# VS Code Installation
+# ------------------------------------------------------------------------------
+Write-Step "VS Code..."
+
+$VSCodeInstalled = Get-Command code -ErrorAction SilentlyContinue
+
+if ($VSCodeInstalled) {
+    Write-Host "VS Code already installed. Checking for updates..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget upgrade Microsoft.VisualStudioCode -s winget --accept-package-agreements --accept-source-agreements 2>$null
+    }
+} else {
+    Write-Host "Installing VS Code..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install Microsoft.VisualStudioCode -s winget --accept-package-agreements --accept-source-agreements
+    } else {
+        Write-Warning "winget not found. Install VS Code manually from https://code.visualstudio.com/"
+    }
+    # Refresh PATH
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+}
+
+if (Get-Command code -ErrorAction SilentlyContinue) {
+    Write-Host "VS Code ready." -ForegroundColor Green
+} else {
+    Write-Warning "VS Code may not be in PATH yet. You may need to restart your terminal."
+}
+
+# ------------------------------------------------------------------------------
 # VS Code Settings Symlink
 # ------------------------------------------------------------------------------
-Write-Host "`n[5/$TotalSteps] VS Code settings symlink..." -ForegroundColor Yellow
+Write-Step "VS Code settings symlink..."
 
 $repoVSCodePath = "$ConfigPath\vscode"
 $vscodeUserPath = "$env:APPDATA\Code\User"
@@ -239,7 +273,7 @@ if (-not (Test-Path $repoVSCodePath)) {
 # ------------------------------------------------------------------------------
 # PowerShell 7 Installation
 # ------------------------------------------------------------------------------
-Write-Host "`n[6/$TotalSteps] PowerShell 7..." -ForegroundColor Yellow
+Write-Step "PowerShell 7..."
 
 $Pwsh7Installed = Get-Command pwsh -ErrorAction SilentlyContinue
 
@@ -269,7 +303,7 @@ if (Get-Command pwsh -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # WezTerm Installation & Configuration
 # ------------------------------------------------------------------------------
-Write-Host "`n[7/$TotalSteps] WezTerm..." -ForegroundColor Yellow
+Write-Step "WezTerm..."
 
 $WezTermInstalled = Get-Command wezterm -ErrorAction SilentlyContinue
 
@@ -330,7 +364,7 @@ if (Get-Command wezterm -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # Komorebi Installation & Configuration
 # ------------------------------------------------------------------------------
-Write-Host "`n[8/$TotalSteps] Komorebi (tiling window manager)..." -ForegroundColor Yellow
+Write-Step "Komorebi (tiling window manager)..."
 
 $KomorebiVersion = "0.1.38"
 $KomorebiInstalled = Get-Command komorebic -ErrorAction SilentlyContinue
@@ -439,7 +473,7 @@ if (Get-Command komorebic -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # YASB (Yet Another Status Bar) Installation & Configuration
 # ------------------------------------------------------------------------------
-Write-Host "`n[9/$TotalSteps] YASB (status bar)..." -ForegroundColor Yellow
+Write-Step "YASB (status bar)..."
 
 # Stop YASB if running (to allow config changes and updates)
 $yasbProcess = Get-Process yasb -ErrorAction SilentlyContinue
@@ -539,7 +573,7 @@ if (Test-Path $YasbExe) {
 # ------------------------------------------------------------------------------
 # Neovim Dependencies (required for LazyVim plugins)
 # ------------------------------------------------------------------------------
-Write-Host "`n[10/$TotalSteps] Neovim dependencies..." -ForegroundColor Yellow
+Write-Step "Neovim dependencies..."
 
 # Python 3 (required for luarocks and some plugins)
 $PythonInstalled = $false
@@ -694,7 +728,7 @@ Write-Host "Neovim dependencies ready." -ForegroundColor Green
 # ------------------------------------------------------------------------------
 # Neovim / LazyVim Installation
 # ------------------------------------------------------------------------------
-Write-Host "`n[11/$TotalSteps] Neovim / LazyVim..." -ForegroundColor Yellow
+Write-Step "Neovim / LazyVim..."
 
 $NeovimInstalled = Get-Command nvim -ErrorAction SilentlyContinue
 
@@ -776,7 +810,7 @@ if (Get-Command npm -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------------------
 # Switcheroo Installation
 # ------------------------------------------------------------------------------
-Write-Host "`n[12/$TotalSteps] Switcheroo (app switcher)..." -ForegroundColor Yellow
+Write-Step "Switcheroo (app switcher)..."
 
 # Check if Switcheroo is installed (it's a GUI app, may not be in PATH)
 $SwitcherooExe = "$env:LOCALAPPDATA\Switcheroo\Switcheroo.exe"
@@ -801,7 +835,7 @@ if ($SwitcherooInstalled) {
 # ------------------------------------------------------------------------------
 # AutoHotkey Installation & UTC.ahk Autostart
 # ------------------------------------------------------------------------------
-Write-Host "`n[13/$TotalSteps] AutoHotkey (UTC.ahk)..." -ForegroundColor Yellow
+Write-Step "AutoHotkey (UTC.ahk)..."
 
 $AhkInstalled = Get-Command autohotkey -ErrorAction SilentlyContinue
 
