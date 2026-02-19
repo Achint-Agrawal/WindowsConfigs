@@ -90,11 +90,9 @@ alt + shift + 0         : komorebic move-to-named-workspace "X"
 #   alt + ctrl + h        -> home profile
 #   alt + ctrl + o        -> office.desktop profile
 #   alt + ctrl + shift + o -> laptop.office profile
-#   alt + ctrl + d        -> default profile
 # ------------------------------------------------------------
 alt + ctrl + g          : powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\komorebi\switch-komorebi.ps1" ghar
 alt + ctrl + l          : powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\komorebi\switch-komorebi.ps1" laptop
 alt + ctrl + h          : powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\komorebi\switch-komorebi.ps1" home
 alt + ctrl + o          : powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\komorebi\switch-komorebi.ps1" office.desktop
 alt + ctrl + shift + o  : powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\komorebi\switch-komorebi.ps1" laptop.office
-alt + ctrl + d          : powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\komorebi\switch-komorebi.ps1" default

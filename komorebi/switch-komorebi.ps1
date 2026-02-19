@@ -1,6 +1,6 @@
 param(
     [Parameter(Position=0, Mandatory=$true)]
-    [ValidateSet('default','laptop','laptop.office','ghar','home','luxor.shorya','office.desktop','rdp.home.into.office.desktop')]
+    [ValidateSet('laptop','laptop.office','ghar','home','luxor.shorya','office.desktop','rdp.home.into.office.desktop')]
     [string]$ProfileName
 )
 

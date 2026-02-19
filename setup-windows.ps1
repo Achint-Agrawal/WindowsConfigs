@@ -434,14 +434,13 @@ if ($WhkdrcSource -eq $WhkdrcTarget) {
     Write-Host "whkdrc not found in repo. Skipping." -ForegroundColor Gray
 }
 
-# Create default komorebi.json symlink if it doesn't exist (defaults to home profile)
+# Create default komorebi.json if it doesn't exist (copy from laptop profile as base)
 $KomorebiDefaultConfig = "$KomorebiConfigHome\komorebi.json"
-$KomorebiHomeConfig = "$KomorebiConfigHome\komorebi.home.json"
+$KomorebiLaptopConfig = "$KomorebiConfigHome\komorebi.laptop.json"
 
-if (-not (Test-Path $KomorebiDefaultConfig) -and (Test-Path $KomorebiHomeConfig)) {
-    New-Item -ItemType SymbolicLink -Path $KomorebiDefaultConfig -Target $KomorebiHomeConfig -Force | Out-Null
-    Write-Host "Created default komorebi.json symlink (pointing to home profile)." -ForegroundColor Gray
-    Write-Host "Use switch-komorebi.ps1 to change profiles." -ForegroundColor Gray
+if (-not (Test-Path $KomorebiDefaultConfig) -and (Test-Path $KomorebiLaptopConfig)) {
+    Copy-Item -Path $KomorebiLaptopConfig -Destination $KomorebiDefaultConfig
+    Write-Host "Created komorebi.json from laptop profile. Edit it for this machine or use switch-komorebi.ps1 to switch profiles." -ForegroundColor Gray
 }
 
 # Register Komorebi autostart (scheduled task)
@@ -571,7 +570,7 @@ if (Test-Path $YasbExe) {
 }
 
 # ------------------------------------------------------------------------------
-# VM Monitor Detection (komorebi default profile + YASB screen)
+# VM Monitor Detection (komorebi.json + YASB screen)
 # ------------------------------------------------------------------------------
 Write-Step "VM monitor detection..."
 

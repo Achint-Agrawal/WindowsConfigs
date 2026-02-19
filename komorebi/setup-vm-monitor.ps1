@@ -7,9 +7,9 @@
     1. Ensures komorebi is running (starts temporarily if needed)
     2. Reads the primary monitor device_id from komorebic state
     3. Reads the primary monitor display name from yasbc
-    4. Updates komorebi.default.json with the detected device_id
+    4. Updates komorebi.json with the detected device_id
     5. Adds the display name to YASB primary-bar screens (if not already present)
-    6. Switches komorebi to the default profile
+    6. Restarts komorebi with the updated config
 
 .EXAMPLE
     .\setup-vm-monitor.ps1
@@ -20,7 +20,7 @@ param()
 
 $ErrorActionPreference = 'Stop'
 $configRoot = "$HOME\.config"
-$defaultConfig = "$configRoot\komorebi\komorebi.default.json"
+$defaultConfig = "$configRoot\komorebi\komorebi.json"
 $yasbConfig = "$configRoot\yasb\config.yaml"
 
 # --- Prerequisites ---
@@ -33,7 +33,7 @@ if (-not (Get-Command yasbc -ErrorAction SilentlyContinue)) {
     return
 }
 if (-not (Test-Path $defaultConfig)) {
-    Write-Warning "komorebi.default.json not found at $defaultConfig. Skipping VM monitor setup."
+    Write-Warning "komorebi.json not found at $defaultConfig. Run setup-windows.ps1 first."
     return
 }
 if (-not (Test-Path $yasbConfig)) {
@@ -81,8 +81,8 @@ try {
     return
 }
 
-# --- 4. Update komorebi.default.json ---
-Write-Host "Updating komorebi.default.json..." -ForegroundColor Cyan
+# --- 4. Update komorebi.json ---
+Write-Host "Updating komorebi.json..." -ForegroundColor Cyan
 $komorebiJson = Get-Content $defaultConfig -Raw | ConvertFrom-Json
 
 $oldDeviceId = $komorebiJson.display_index_preferences.'0'
@@ -114,10 +114,12 @@ if ($yasbContent -match [regex]::Escape($yasbDisplayName)) {
     Write-Host "  Added '$yasbDisplayName' to primary-bar screens." -ForegroundColor Yellow
 }
 
-# --- 6. Switch to default profile ---
-Write-Host "Switching komorebi to default profile..." -ForegroundColor Cyan
-if ($PSCmdlet.ShouldProcess("komorebi", "Switch to default profile")) {
-    & "$configRoot\komorebi\switch-komorebi.ps1" default
+# --- 6. Restart komorebi with updated config ---
+Write-Host "Restarting komorebi..." -ForegroundColor Cyan
+if ($PSCmdlet.ShouldProcess("komorebi", "Restart with updated komorebi.json")) {
+    komorebic stop --whkd 2>$null
+    Start-Sleep -Milliseconds 500
+    komorebic start --whkd --config $defaultConfig | Out-Null
 }
 
 Write-Host "VM monitor setup complete." -ForegroundColor Green
