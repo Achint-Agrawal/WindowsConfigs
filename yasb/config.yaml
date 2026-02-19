@@ -11,7 +11,7 @@ komorebi:
 bars:
   primary-bar:
     enabled: true
-    screens: ['AB23M215001BZ', 'LF22T35', 'DELL P2418D (1)', 'DELL P2418D']
+    screens: ['\\.\DISPLAY129', 'AB23M215001BZ', 'LF22T35', 'DELL P2418D (1)', 'DELL P2418D']
     class_name: "yasb-bar"
     alignment:
       position: "top"

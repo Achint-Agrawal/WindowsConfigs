@@ -17,7 +17,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 
 # Step counter for progress display (auto-increments — no need to renumber steps)
 $script:CurrentStep = 0
-$TotalSteps = 14
+$TotalSteps = 15
 function Write-Step($label) {
     $script:CurrentStep++
     Write-Host "`n[$script:CurrentStep/$TotalSteps] $label" -ForegroundColor Yellow
@@ -568,6 +568,19 @@ if (Test-Path $YasbExe) {
     Write-Host "YASB ready." -ForegroundColor Green
 } else {
     Write-Warning "YASB executable not found. It may need to be installed first."
+}
+
+# ------------------------------------------------------------------------------
+# VM Monitor Detection (komorebi default profile + YASB screen)
+# ------------------------------------------------------------------------------
+Write-Step "VM monitor detection..."
+
+$SetupVmScript = "$ConfigPath\komorebi\setup-vm-monitor.ps1"
+if (Test-Path $SetupVmScript) {
+    Write-Host "Running setup-vm-monitor.ps1..." -ForegroundColor Gray
+    & $SetupVmScript
+} else {
+    Write-Host "setup-vm-monitor.ps1 not found, skipping." -ForegroundColor Gray
 }
 
 # ------------------------------------------------------------------------------
