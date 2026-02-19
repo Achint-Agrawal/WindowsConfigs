@@ -3,6 +3,9 @@ local act = wezterm.action
 
 local config = wezterm.config_builder and wezterm.config_builder() or {}
 
+-- Use WebGpu frontend (OpenGL too old on this system)
+config.front_end = "WebGpu"
+
 -- Set PowerShell 7 as default shell
 config.default_prog = { "C:\\Program Files\\PowerShell\\7\\pwsh.exe" }
 
