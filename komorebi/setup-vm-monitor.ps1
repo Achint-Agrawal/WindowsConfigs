@@ -1,15 +1,17 @@
 <#
 .SYNOPSIS
-    Detects the current monitor and configures komorebi + YASB for a new VM/virtual desktop.
+    Creates komorebi.default.json from the laptop profile with the correct monitor ID.
 
 .DESCRIPTION
     Idempotent — safe to run multiple times. Skips steps that are already correct.
-    1. Ensures komorebi is running (starts temporarily if needed)
-    2. Reads the primary monitor device_id from komorebic state
-    3. Reads the primary monitor display name from yasbc
-    4. Updates komorebi.json with the detected device_id
-    5. Adds the display name to YASB primary-bar screens (if not already present)
-    6. Restarts komorebi with the updated config
+    1. Copies komorebi.laptop.json to komorebi.default.json (gitignored, local per machine)
+    2. Ensures komorebi is running (starts temporarily if needed)
+    3. Detects the primary monitor device_id via komorebic state
+    4. Replaces display_index_preferences in komorebi.default.json with the detected ID
+    5. Detects the display name via yasbc and adds it to YASB primary-bar screens
+    6. Restarts komorebi with the default profile
+
+    Requires: komorebic, yasbc (installed by setup-windows.ps1)
 
 .EXAMPLE
     .\setup-vm-monitor.ps1
@@ -20,7 +22,8 @@ param()
 
 $ErrorActionPreference = 'Stop'
 $configRoot = "$HOME\.config"
-$defaultConfig = "$configRoot\komorebi\komorebi.json"
+$laptopConfig = "$configRoot\komorebi\komorebi.laptop.json"
+$defaultConfig = "$configRoot\komorebi\komorebi.default.json"
 $yasbConfig = "$configRoot\yasb\config.yaml"
 
 # --- Prerequisites ---
@@ -32,16 +35,23 @@ if (-not (Get-Command yasbc -ErrorAction SilentlyContinue)) {
     Write-Warning "yasbc not found in PATH. Skipping VM monitor setup."
     return
 }
-if (-not (Test-Path $defaultConfig)) {
-    Write-Warning "komorebi.json not found at $defaultConfig. Run setup-windows.ps1 first."
+if (-not (Test-Path $laptopConfig)) {
+    Write-Warning "komorebi.laptop.json not found at $laptopConfig. Run setup-windows.ps1 first."
     return
 }
 if (-not (Test-Path $yasbConfig)) {
-    Write-Warning "YASB config.yaml not found at $yasbConfig. Skipping VM monitor setup."
+    Write-Warning "YASB config.yaml not found at $yasbConfig. Run setup-windows.ps1 first."
     return
 }
 
-# --- 1. Ensure komorebi is running so we can query state ---
+# --- 1. Copy laptop profile to default ---
+Write-Host "Copying laptop profile to komorebi.default.json..." -ForegroundColor Cyan
+if ($PSCmdlet.ShouldProcess($defaultConfig, "Copy from $laptopConfig")) {
+    Copy-Item $laptopConfig $defaultConfig -Force
+    Write-Host "  Copied komorebi.laptop.json -> komorebi.default.json" -ForegroundColor Yellow
+}
+
+# --- 2. Ensure komorebi is running so we can query state ---
 $startedKomorebi = $false
 if (-not (Get-Process komorebi -ErrorAction SilentlyContinue)) {
     Write-Host "Starting komorebi temporarily to detect monitor..." -ForegroundColor Gray
@@ -52,7 +62,7 @@ if (-not (Get-Process komorebi -ErrorAction SilentlyContinue)) {
     }
 }
 
-# --- 2. Detect monitor from komorebic ---
+# --- 3. Detect monitor from komorebic ---
 Write-Host "Detecting monitor from komorebic..." -ForegroundColor Cyan
 try {
     $state = komorebic state 2>&1 | ConvertFrom-Json
@@ -67,22 +77,8 @@ try {
     return
 }
 
-# --- 3. Detect monitor from yasbc ---
-Write-Host "Detecting monitor from yasbc..." -ForegroundColor Cyan
-try {
-    $yasbOutput = yasbc monitor-information 2>&1
-    $match = $yasbOutput | Select-String 'Name:\s*(.+)'
-    if (-not $match) { throw "No monitor name found in yasbc output" }
-    $yasbDisplayName = $match.Matches[0].Groups[1].Value.Trim()
-    Write-Host "  yasbc display name  : $yasbDisplayName" -ForegroundColor Gray
-} catch {
-    Write-Warning "Failed to read yasbc monitor info: $_"
-    if ($startedKomorebi) { komorebic stop --whkd 2>$null }
-    return
-}
-
-# --- 4. Update komorebi.json ---
-Write-Host "Updating komorebi.json..." -ForegroundColor Cyan
+# --- 4. Update komorebi.default.json with detected monitor ---
+Write-Host "Updating komorebi.default.json..." -ForegroundColor Cyan
 $komorebiJson = Get-Content $defaultConfig -Raw | ConvertFrom-Json
 
 $oldDeviceId = $komorebiJson.display_index_preferences.'0'
@@ -95,33 +91,45 @@ if ($oldDeviceId -eq $deviceId) {
 }
 
 # --- 5. Add display name to YASB primary-bar screens ---
-Write-Host "Updating YASB config.yaml..." -ForegroundColor Cyan
-$yasbContent = Get-Content $yasbConfig -Raw
+Write-Host "Detecting monitor from yasbc..." -ForegroundColor Cyan
+try {
+    $yasbOutput = yasbc monitor-information 2>&1
+    $match = $yasbOutput | Select-String 'Name:\s*(.+)'
+    if (-not $match) { throw "No monitor name found in yasbc output" }
+    $yasbDisplayName = $match.Matches[0].Groups[1].Value.Trim()
+    Write-Host "  yasbc display name  : $yasbDisplayName" -ForegroundColor Gray
 
-if ($yasbContent -match [regex]::Escape($yasbDisplayName)) {
-    Write-Host "  YASB screens already contains '$yasbDisplayName'." -ForegroundColor Green
-} elseif ($PSCmdlet.ShouldProcess($yasbConfig, "Add '$yasbDisplayName' to primary-bar screens")) {
-    # Only replace the first screens: line (primary-bar)
-    $lines = $yasbContent -split "`n"
-    $replaced = $false
-    $newLines = foreach ($line in $lines) {
-        if (-not $replaced -and $line -match "screens:\s*\[") {
-            $line -replace "(screens:\s*\[)", "`$1'$yasbDisplayName', "
-            $replaced = $true
-        } else { $line }
+    Write-Host "Updating YASB config.yaml..." -ForegroundColor Cyan
+    $yasbContent = Get-Content $yasbConfig -Raw
+
+    if ($yasbContent -match [regex]::Escape($yasbDisplayName)) {
+        Write-Host "  YASB screens already contains '$yasbDisplayName'." -ForegroundColor Green
+    } elseif ($PSCmdlet.ShouldProcess($yasbConfig, "Add '$yasbDisplayName' to primary-bar screens")) {
+        $lines = $yasbContent -split "`n"
+        $replaced = $false
+        $newLines = foreach ($line in $lines) {
+            if (-not $replaced -and $line -match "screens:\s*\[") {
+                $line -replace "(screens:\s*\[)", "`$1'$yasbDisplayName', "
+                $replaced = $true
+            } else { $line }
+        }
+        ($newLines -join "`n") | Set-Content $yasbConfig -NoNewline -Encoding UTF8
+        Write-Host "  Added '$yasbDisplayName' to primary-bar screens." -ForegroundColor Yellow
     }
-    ($newLines -join "`n") | Set-Content $yasbConfig -NoNewline -Encoding UTF8
-    Write-Host "  Added '$yasbDisplayName' to primary-bar screens." -ForegroundColor Yellow
+} catch {
+    Write-Warning "Failed to update YASB config: $_"
+    return
 }
 
-# --- 6. Restart komorebi with updated config ---
+# --- 6. Restart komorebi with default profile ---
 Write-Host "Restarting komorebi..." -ForegroundColor Cyan
-if ($PSCmdlet.ShouldProcess("komorebi", "Restart with updated komorebi.json")) {
+if ($PSCmdlet.ShouldProcess("komorebi", "Restart with komorebi.default.json")) {
     komorebic stop --whkd 2>$null
     Start-Sleep -Milliseconds 500
     komorebic start --whkd --config $defaultConfig | Out-Null
 }
 
 Write-Host "VM monitor setup complete." -ForegroundColor Green
-Write-Host "  Monitor : $monitorName ($yasbDisplayName)" -ForegroundColor Gray
+Write-Host "  Profile : komorebi.default.json (copied from laptop)" -ForegroundColor Gray
+Write-Host "  Monitor : $monitorName" -ForegroundColor Gray
 Write-Host "  Device  : $deviceId" -ForegroundColor Gray
