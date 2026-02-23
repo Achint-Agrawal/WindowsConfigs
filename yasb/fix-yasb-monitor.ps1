@@ -32,7 +32,7 @@ $displayName = $match.Matches[0].Groups[1].Value.Trim()
 
 $yasbContent = Get-Content $yasbConfig -Raw
 
-if ($yasbContent -match [regex]::Escape($displayName)) {
+if ($yasbContent.Contains("'$displayName'")) {
     Write-Host "YASB primary-bar screens already contains '$displayName'." -ForegroundColor Green
     return
 }
