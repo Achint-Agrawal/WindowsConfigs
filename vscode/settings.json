@@ -22,5 +22,25 @@
     "dev.containers.executeInWSL": true,
     "chat.viewSessions.orientation": "stacked",
     "git.confirmSync": false,
-    "python.terminal.useEnvFile": true
+    "python.terminal.useEnvFile": true,
+    "extensions.experimental.affinity": {
+        "asvetliakov.vscode-neovim": 1
+    },
+    "mssql.connections": [
+        {
+            "authenticationType": "Integrated",
+            "connectTimeout": 30,
+            "applicationName": "vscode-mssql",
+            "applicationIntent": "ReadWrite",
+            "server": "localhost",
+            "database": "",
+            "commandTimeout": 30,
+            "encrypt": "Mandatory",
+            "groupId": "ROOT",
+            "profileName": "",
+            "trustServerCertificate": true,
+            "id": "450BF94D-58BC-4406-999C-8628FEE8F92F",
+            "password": ""
+        }
+    ]
 }

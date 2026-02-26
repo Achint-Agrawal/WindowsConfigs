@@ -13,6 +13,20 @@
 				"x-mcp-ec-repository": "CosmosDB",
 				"x-mcp-ec-branch": "master"
 			}
+		},
+		"ado": {
+			"tools": [
+				"*"
+			],
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@azure-devops/mcp",
+				"msdata",
+				"-a",
+				"azcli"
+			]
 		}
 	},
 	"inputs": []
