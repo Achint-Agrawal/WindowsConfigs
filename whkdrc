@@ -100,4 +100,5 @@ alt + ctrl + o          : powershell -NoProfile -ExecutionPolicy Bypass -File "$
 alt + ctrl + shift + o  : powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\komorebi\switch-komorebi.ps1" laptop.office
 
 # Fix YASB bar on current monitor (adds display to primary-bar screens)
-alt + ctrl + y          : powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\yasb\fix-yasb-monitor.ps1"
+# First resets config.yaml to HEAD, then runs the fix script
+alt + ctrl + y          : git -C "$HOME\.config" checkout -- yasb/config.yaml; powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\.config\yasb\fix-yasb-monitor.ps1"
