@@ -709,15 +709,45 @@ if (-not $GsInstalled) {
     # Also check for gswin64c which is the Windows executable name
     $GsInstalled = Get-Command gswin64c -ErrorAction SilentlyContinue
 }
+if (-not $GsInstalled) {
+    # Check if installed but not in PATH
+    $gsDir = Get-ChildItem "C:\Program Files\gs" -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
+    if ($gsDir -and (Test-Path "$($gsDir.FullName)\bin\gswin64c.exe")) {
+        $gsBin = "$($gsDir.FullName)\bin"
+        $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+        if ($userPath -notlike "*$gsBin*") {
+            [System.Environment]::SetEnvironmentVariable("Path", "$userPath;$gsBin", "User")
+        }
+        $env:Path += ";$gsBin"
+        Write-Host "Ghostscript found, added to PATH." -ForegroundColor Green
+        $GsInstalled = $true
+    }
+}
 if ($GsInstalled) {
     Write-Host "Ghostscript already installed." -ForegroundColor Green
 } else {
     Write-Host "Installing Ghostscript..." -ForegroundColor Gray
-    if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget install ArtifexSoftware.GhostScript -s winget --accept-package-agreements --accept-source-agreements
+    # Ghostscript was removed from winget; download installer directly
+    $gsVersion = "10.05.1"
+    $gsInstallerUrl = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10051/gs10051w64.exe"
+    $gsInstaller = "$env:TEMP\gs_installer.exe"
+    try {
+        Invoke-WebRequest -Uri $gsInstallerUrl -OutFile $gsInstaller -UseBasicParsing
+        Start-Process -FilePath $gsInstaller -ArgumentList "/S" -Wait
+        Remove-Item $gsInstaller -ErrorAction SilentlyContinue
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-    } else {
-        Write-Warning "winget not found. Install Ghostscript manually."
+        # Ghostscript installer doesn't add itself to PATH; do it manually
+        $gsBin = "C:\Program Files\gs\gs$gsVersion\bin"
+        if ((Test-Path $gsBin) -and ($env:Path -notlike "*$gsBin*")) {
+            $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+            if ($userPath -notlike "*$gsBin*") {
+                [System.Environment]::SetEnvironmentVariable("Path", "$userPath;$gsBin", "User")
+            }
+            $env:Path += ";$gsBin"
+        }
+        Write-Host "Ghostscript $gsVersion installed." -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to download Ghostscript. Install manually from https://ghostscript.com/releases/gsdnld.html"
     }
 }
 
@@ -928,11 +958,15 @@ if (Test-Path $AhkScript) {
             # Find AutoHotkey executable
             $ahkExe = (Get-Command autohotkey -ErrorAction SilentlyContinue).Source
             if (-not $ahkExe) {
-                # Common install locations
-                $ahkExe = "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe"
-                if (-not (Test-Path $ahkExe)) {
-                    $ahkExe = "C:\Program Files\AutoHotkey\AutoHotkey.exe"
-                }
+                # Check common install locations (winget installs to LOCALAPPDATA)
+                $ahkCandidates = @(
+                    "$env:LOCALAPPDATA\Programs\AutoHotkey\v2\AutoHotkey64.exe",
+                    "$env:LOCALAPPDATA\Programs\AutoHotkey\v2\AutoHotkey32.exe",
+                    "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe",
+                    "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe",
+                    "C:\Program Files\AutoHotkey\AutoHotkey.exe"
+                )
+                $ahkExe = $ahkCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
             }
 
             if ($ahkExe -and (Test-Path $ahkExe)) {

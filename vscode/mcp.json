@@ -27,6 +27,17 @@
 				"-a",
 				"azcli"
 			]
+		},
+		"rcakit": {
+			"tools": [
+				"*"
+			],
+			"type": "http",
+			"url": "https://coslsmcp-app.livelybeach-8f6a50c5.eastus2.azurecontainerapps.io/mcp",
+			"headers": {
+				"X-User-Alias": "pimehr",
+				"X-Tenant": "cosmosdb"
+			}
 		}
 	},
 	"inputs": []
