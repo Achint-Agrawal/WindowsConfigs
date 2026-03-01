@@ -17,7 +17,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 
 # Step counter for progress display (auto-increments — no need to renumber steps)
 $script:CurrentStep = 0
-$TotalSteps = 15
+$TotalSteps = 16
 function Write-Step($label) {
     $script:CurrentStep++
     Write-Host "`n[$script:CurrentStep/$TotalSteps] $label" -ForegroundColor Yellow
@@ -988,6 +988,43 @@ if (Test-Path $AhkScript) {
 }
 
 # ------------------------------------------------------------------------------
+# Copilot CLI MCP Config
+# ------------------------------------------------------------------------------
+Write-Step "Copilot CLI MCP config..."
+
+$CopilotMcpSource = "$ConfigPath\copilot\mcp-config.json"
+$CopilotMcpTarget = "$env:USERPROFILE\.copilot\mcp-config.json"
+
+if (Test-Path $CopilotMcpSource) {
+    # Ensure ~/.copilot directory exists
+    New-Item -ItemType Directory -Path "$env:USERPROFILE\.copilot" -Force -ErrorAction SilentlyContinue | Out-Null
+
+    # Check if already hardlinked (same file)
+    $needsLink = $true
+    if (Test-Path $CopilotMcpTarget) {
+        $sourceLinks = fsutil hardlink list $CopilotMcpSource 2>$null
+        $targetPath = $CopilotMcpTarget.Replace("$env:HOMEDRIVE", "")
+        if ($sourceLinks -and ($sourceLinks -contains $targetPath)) {
+            Write-Host "Copilot CLI MCP config already linked." -ForegroundColor Green
+            $needsLink = $false
+        } else {
+            # Exists but not linked — back up and replace
+            $backupPath = "$CopilotMcpTarget.backup"
+            Copy-Item $CopilotMcpTarget $backupPath -Force
+            Remove-Item $CopilotMcpTarget -Force
+            Write-Host "Backed up existing MCP config to: $backupPath" -ForegroundColor Gray
+        }
+    }
+
+    if ($needsLink) {
+        New-Item -ItemType HardLink -Path $CopilotMcpTarget -Target $CopilotMcpSource | Out-Null
+        Write-Host "Copilot CLI MCP config linked." -ForegroundColor Green
+    }
+} else {
+    Write-Host "Copilot MCP config not found in repo. Skipping." -ForegroundColor Gray
+}
+
+# ------------------------------------------------------------------------------
 # Done
 # ------------------------------------------------------------------------------
 Write-Host "`n=== Setup Complete ===" -ForegroundColor Cyan
@@ -1001,3 +1038,4 @@ Write-Host "      Alt+Ctrl+O = office.desktop, Alt+Ctrl+Shift+O = laptop.office"
 Write-Host "  - WezTerm: Launch from Start Menu or run 'wezterm'" -ForegroundColor Gray
 Write-Host "  - YASB: Starts automatically at login, or run from Program Files" -ForegroundColor Gray
 Write-Host "  - UTC.ahk: Starts automatically at login (Alt+U=UTC, Alt+I=IST, Alt+P=PST/PDT)" -ForegroundColor Gray
+Write-Host "  - Copilot CLI: MCP servers configured from repo (edit copilot/mcp-config.json)" -ForegroundColor Gray
