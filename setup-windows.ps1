@@ -721,9 +721,38 @@ if ($GsInstalled) {
     }
 }
 
+# 7-Zip (required by mason.nvim for extracting packages)
+$SevenZipInstalled = Get-Command 7z -ErrorAction SilentlyContinue
+if ($SevenZipInstalled) {
+    Write-Host "7-Zip already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing 7-Zip..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install 7zip.7zip -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+        scoop install 7zip
+    } else {
+        Write-Warning "Neither winget nor scoop found. Install 7-Zip manually."
+    }
+}
+
+# Add Git's Unix tools to PATH for mason.nvim (provides unzip, gzip)
+$GitUsrBin = "C:\Program Files\Git\usr\bin"
+if ((Test-Path $GitUsrBin) -and ($env:Path -notlike "*Git\usr\bin*")) {
+    Write-Host "Adding Git Unix tools to PATH (unzip, gzip)..." -ForegroundColor Gray
+    $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    if ($userPath -notlike "*Git\usr\bin*") {
+        [System.Environment]::SetEnvironmentVariable("Path", "$userPath;$GitUsrBin", "User")
+    }
+    $env:Path += ";$GitUsrBin"
+    Write-Host "Git Unix tools added to PATH." -ForegroundColor Green
+}
+
 # neovim npm package (required for Node.js provider)
 if (Get-Command npm -ErrorAction SilentlyContinue) {
-    $neovimNpmInstalled = npm list -g neovim 2>$null | Select-String "neovim"
+    $neovimNpmInstalled = $null
+    try { $neovimNpmInstalled = npm list -g neovim 2>$null | Select-String "neovim" } catch { }
     if ($neovimNpmInstalled) {
         Write-Host "neovim npm package already installed." -ForegroundColor Green
     } else {
@@ -807,11 +836,28 @@ if (Get-Command nvim -ErrorAction SilentlyContinue) {
 
 # Install tree-sitter-cli (required for Neovim tree-sitter parser compilation)
 if (Get-Command npm -ErrorAction SilentlyContinue) {
+    # Ensure npm global bin directory is in PATH (needed for globally installed tools)
+    $npmPrefix = (npm config get prefix 2>$null)
+    if ($npmPrefix -and (Test-Path $npmPrefix) -and ($env:Path -notlike "*$([regex]::Escape($npmPrefix))*")) {
+        $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+        if ($userPath -notlike "*$([regex]::Escape($npmPrefix))*") {
+            [System.Environment]::SetEnvironmentVariable("Path", "$userPath;$npmPrefix", "User")
+            Write-Host "Added npm global bin to user PATH: $npmPrefix" -ForegroundColor Gray
+        }
+        $env:Path += ";$npmPrefix"
+    }
+
     $treeSitterInstalled = Get-Command tree-sitter -ErrorAction SilentlyContinue
     if (-not $treeSitterInstalled) {
         Write-Host "Installing tree-sitter-cli..." -ForegroundColor Gray
         npm install -g tree-sitter-cli
-        Write-Host "tree-sitter-cli installed." -ForegroundColor Green
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+        if (Get-Command tree-sitter -ErrorAction SilentlyContinue) {
+            Write-Host "tree-sitter-cli installed." -ForegroundColor Green
+        } else {
+            Write-Warning "tree-sitter-cli installed via npm but not found in PATH. Restart your terminal."
+        }
     } else {
         Write-Host "tree-sitter-cli already installed." -ForegroundColor Green
     }
