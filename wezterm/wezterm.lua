@@ -55,6 +55,8 @@ config.keys = {
   { key = "c", mods = "LEADER", action = act.SpawnTab "CurrentPaneDomain" },
   { key = "w", mods = "LEADER", action = act.ShowTabNavigator },
   { key = "&", mods = "LEADER|SHIFT", action = act.CloseCurrentTab { confirm = true } },
+  -- Forward Ctrl+. to apps (for Neovim Sidekick toggle)
+  { key = ".", mods = "CTRL", action = act.SendString("\x1b[46;5u") },
 }
 
 -- Optional: Put the tab bar at the bottom
