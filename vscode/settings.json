@@ -42,5 +42,6 @@
             "id": "450BF94D-58BC-4406-999C-8628FEE8F92F",
             "password": ""
         }
-    ]
+    ],
+    "github.copilot.nextEditSuggestions.enabled": true
 }
