@@ -17,7 +17,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 
 # Step counter for progress display (auto-increments — no need to renumber steps)
 $script:CurrentStep = 0
-$TotalSteps = 16
+$TotalSteps = 15
 function Write-Step($label) {
     $script:CurrentStep++
     Write-Host "`n[$script:CurrentStep/$TotalSteps] $label" -ForegroundColor Yellow
@@ -406,6 +406,47 @@ if ($CurrentKomorebiConfigHome -ne $KomorebiConfigHome) {
     Write-Host "KOMOREBI_CONFIG_HOME already set." -ForegroundColor Gray
 }
 
+# Mesa3D software OpenGL for komorebi-bar (required on Hyper-V / VMs without GPU)
+$KomorebiBarDir = Split-Path (Get-Command komorebi-bar -ErrorAction SilentlyContinue).Source -ErrorAction SilentlyContinue
+if ($KomorebiBarDir -and -not (Test-Path "$KomorebiBarDir\opengl32.dll")) {
+    Write-Host "Installing Mesa3D software OpenGL for komorebi-bar..." -ForegroundColor Gray
+    try {
+        $mesaUrl = "https://github.com/pal1000/mesa-dist-win/releases/download/26.0.3/mesa3d-26.0.3-release-msvc.7z"
+        $mesaTmp = "$env:TEMP\mesa3d-setup"
+        New-Item -ItemType Directory -Path $mesaTmp -Force | Out-Null
+        curl.exe -sL -o "$mesaTmp\mesa3d.7z" $mesaUrl
+        $7zExe = "C:\Program Files\7-Zip\7z.exe"
+        if (-not (Test-Path $7zExe)) { $7zExe = (Get-Command 7z -ErrorAction SilentlyContinue).Source }
+        if ($7zExe) {
+            & $7zExe x "$mesaTmp\mesa3d.7z" -o"$mesaTmp\extracted" -y 2>&1 | Out-Null
+            Copy-Item "$mesaTmp\extracted\x64\opengl32.dll" "$KomorebiBarDir\opengl32.dll" -Force
+            Copy-Item "$mesaTmp\extracted\x64\libgallium_wgl.dll" "$KomorebiBarDir\libgallium_wgl.dll" -Force
+            Write-Host "Mesa3D OpenGL DLLs installed." -ForegroundColor Green
+        } else {
+            Write-Warning "7-Zip not found. Install Mesa3D manually (see README)."
+        }
+        Remove-Item $mesaTmp -Recurse -Force -ErrorAction SilentlyContinue
+    } catch {
+        Write-Warning "Failed to install Mesa3D: $_"
+    }
+} elseif ($KomorebiBarDir) {
+    Write-Host "Mesa3D OpenGL already installed for komorebi-bar." -ForegroundColor Green
+}
+
+# Set Mesa environment variables for software rendering (needed on VMs)
+$mesaVars = @{
+    GALLIUM_DRIVER          = "llvmpipe"
+    MESA_GL_VERSION_OVERRIDE = "4.5"
+    LIBGL_ALWAYS_SOFTWARE   = "1"
+}
+foreach ($kv in $mesaVars.GetEnumerator()) {
+    $current = [System.Environment]::GetEnvironmentVariable($kv.Key, "User")
+    if ($current -ne $kv.Value) {
+        [System.Environment]::SetEnvironmentVariable($kv.Key, $kv.Value, "User")
+        Set-Item "env:$($kv.Key)" $kv.Value
+    }
+}
+
 # whkdrc symlink - whkd looks for config at ~/.config/whkdrc
 $WhkdrcSource = "$ConfigPath\whkdrc"
 $WhkdrcTarget = "$env:USERPROFILE\.config\whkdrc"
@@ -455,7 +496,7 @@ if (Get-Command komorebic -ErrorAction SilentlyContinue) {
         try {
             # Find komorebic executable path
             $komorebicPath = (Get-Command komorebic).Source
-            $action = New-ScheduledTaskAction -Execute $komorebicPath -Argument "start --whkd"
+            $action = New-ScheduledTaskAction -Execute $komorebicPath -Argument "start --whkd --bar"
             $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
             $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
             Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Description "Launch Komorebi tiling window manager at user logon" | Out-Null
@@ -470,107 +511,7 @@ if (Get-Command komorebic -ErrorAction SilentlyContinue) {
 }
 
 # ------------------------------------------------------------------------------
-# YASB (Yet Another Status Bar) Installation & Configuration
-# ------------------------------------------------------------------------------
-Write-Step "YASB (status bar)..."
-
-# Stop YASB if running (to allow config changes and updates)
-$yasbProcess = Get-Process yasb -ErrorAction SilentlyContinue
-if ($yasbProcess) {
-    Write-Host "Stopping YASB..." -ForegroundColor Gray
-    Stop-Process -Name yasb -Force
-    Start-Sleep -Milliseconds 500
-}
-
-$YasbExe = "C:\Program Files\YASB\yasb.exe"
-$YasbInstalled = Test-Path $YasbExe
-
-if ($YasbInstalled) {
-    Write-Host "YASB already installed." -ForegroundColor Gray
-    if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget upgrade AmN.yasb -s winget --accept-package-agreements --accept-source-agreements 2>$null
-    }
-} else {
-    Write-Host "Installing YASB..." -ForegroundColor Gray
-    if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget install AmN.yasb -s winget --accept-package-agreements --accept-source-agreements
-    } else {
-        Write-Warning "winget not found. Install YASB manually from https://github.com/amnweb/yasb"
-    }
-}
-
-# YASB config symlink - YASB looks for config in ~/.config/yasb/
-$YasbConfigSource = "$ConfigPath\yasb"
-$YasbConfigTarget = "$env:USERPROFILE\.config\yasb"
-
-# Check if source and target are the same (repo already in correct location)
-if ($YasbConfigSource -eq $YasbConfigTarget) {
-    if (Test-Path $YasbConfigSource) {
-        Write-Host "YASB config already in correct location." -ForegroundColor Green
-    } else {
-        Write-Host "YASB config folder not found. Skipping config setup." -ForegroundColor Gray
-    }
-} elseif (Test-Path $YasbConfigSource) {
-    $existingLink = Get-Item $YasbConfigTarget -ErrorAction SilentlyContinue
-    
-    if ($existingLink -and ($existingLink.LinkType -eq "Junction" -or $existingLink.LinkType -eq "SymbolicLink")) {
-        $target = $existingLink.Target
-        if ($target -eq $YasbConfigSource) {
-            Write-Host "YASB config already symlinked." -ForegroundColor Green
-        } else {
-            Write-Host "YASB config folder is linked to: $target" -ForegroundColor Gray
-        }
-    } elseif (Test-Path $YasbConfigTarget) {
-        # YASB config exists but is not a symlink - backup and symlink
-        $backupPath = "$env:USERPROFILE\.config\yasb.backup"
-        if (-not (Test-Path $backupPath)) {
-            Move-Item $YasbConfigTarget $backupPath -Force
-            Write-Host "Backed up existing YASB config to: $backupPath" -ForegroundColor Gray
-        } else {
-            Remove-Item $YasbConfigTarget -Recurse -Force
-        }
-        New-Item -ItemType Junction -Path $YasbConfigTarget -Target $YasbConfigSource -Force | Out-Null
-        Write-Host "YASB config symlinked!" -ForegroundColor Green
-    } else {
-        # Ensure parent directory exists
-        $YasbConfigParent = Split-Path $YasbConfigTarget -Parent
-        if (-not (Test-Path $YasbConfigParent)) {
-            New-Item -ItemType Directory -Path $YasbConfigParent -Force | Out-Null
-        }
-        New-Item -ItemType Junction -Path $YasbConfigTarget -Target $YasbConfigSource -Force | Out-Null
-        Write-Host "YASB config symlinked!" -ForegroundColor Green
-    }
-} else {
-    Write-Host "YASB config folder not found in repo. Skipping config symlink." -ForegroundColor Gray
-}
-
-# Register YASB autostart (scheduled task)
-if (Test-Path $YasbExe) {
-    $taskName = 'YASB Autostart'
-    $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
-    
-    if ($existingTask) {
-        Write-Host "YASB autostart task already registered." -ForegroundColor Green
-    } else {
-        Write-Host "Registering YASB autostart task..." -ForegroundColor Gray
-        try {
-            $action = New-ScheduledTaskAction -Execute $YasbExe
-            $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
-            $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
-            Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Description "Launch YASB bar at user logon" | Out-Null
-            Write-Host "YASB autostart task registered!" -ForegroundColor Green
-        } catch {
-            Write-Warning "Failed to register YASB autostart task: $_"
-            Write-Host "You can manually run: $ConfigPath\yasb\autostart-yasb.ps1 -RegisterTask" -ForegroundColor Gray
-        }
-    }
-    Write-Host "YASB ready." -ForegroundColor Green
-} else {
-    Write-Warning "YASB executable not found. It may need to be installed first."
-}
-
-# ------------------------------------------------------------------------------
-# VM Monitor Detection (komorebi.json + YASB screen)
+# VM Monitor Detection (komorebi.json)
 # ------------------------------------------------------------------------------
 Write-Step "VM monitor detection..."
 
@@ -1031,11 +972,10 @@ Write-Host "`n=== Setup Complete ===" -ForegroundColor Cyan
 Write-Host "Restart your terminal to apply changes." -ForegroundColor Yellow
 
 Write-Host "`nQuick Start Guide:" -ForegroundColor Cyan
-Write-Host "  - Komorebi: Starts automatically at login (or run 'komorebic start --whkd')" -ForegroundColor Gray
+Write-Host "  - Komorebi: Starts automatically at login with built-in bar (or run 'komorebic start --whkd --bar')" -ForegroundColor Gray
 Write-Host "  - Switch Komorebi profile via whkd shortcuts:" -ForegroundColor Gray
 Write-Host "      Alt+Ctrl+H = home, Alt+Ctrl+G = ghar, Alt+Ctrl+L = laptop" -ForegroundColor Gray
 Write-Host "      Alt+Ctrl+O = office.desktop, Alt+Ctrl+Shift+O = laptop.office" -ForegroundColor Gray
 Write-Host "  - WezTerm: Launch from Start Menu or run 'wezterm'" -ForegroundColor Gray
-Write-Host "  - YASB: Starts automatically at login, or run from Program Files" -ForegroundColor Gray
 Write-Host "  - UTC.ahk: Starts automatically at login (Alt+U=UTC, Alt+I=IST, Alt+P=PST/PDT)" -ForegroundColor Gray
 Write-Host "  - Copilot CLI: MCP servers configured from repo (edit copilot/mcp-config.json)" -ForegroundColor Gray

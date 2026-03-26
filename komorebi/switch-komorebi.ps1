@@ -8,14 +8,12 @@ $target = "$HOME\.config\komorebi\komorebi.$ProfileName.json"
 
 if (-not (Test-Path $target)) { exit 1 }
 
-Get-Process yasb -ErrorAction SilentlyContinue | Stop-Process -Force
-
-# Start or restart komorebi with the new config
+# Start or restart komorebi with the new config (bar is built-in)
 if (Get-Process komorebi -ErrorAction SilentlyContinue) {
     komorebic stop --whkd --bar | Out-Null
     Start-Sleep -Milliseconds 500
 }
-komorebic start --whkd --config $target | Out-Null
+komorebic start --whkd --bar --config $target | Out-Null
 
 # Wait for komorebi to initialize, then ensure workspace names are set
 # This fixes a race condition where initial_workspace_rules can create workspaces before names are applied
@@ -29,5 +27,3 @@ for ($m = 0; $m -lt $config.monitors.Count; $m++) {
         }
     }
 }
-
-Start-Process 'C:\Program Files\YASB\yasb.exe'
