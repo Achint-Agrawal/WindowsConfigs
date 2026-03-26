@@ -98,6 +98,7 @@ yarn.lock
 !nvim/lazy-lock.json
 # Ignore specific Komorebi layout config
 komorebi/komorebi.json
+komorebi/komorebi.default.json
 !wezterm/wezterm.lua
 !whkdrc
 

@@ -1,23 +1,22 @@
 {
-	"servers": {
+	"mcpServers": {
 		"kql-builder": {
+			"type": "sse",
 			"url": "http://172.176.135.150:8000/sse",
-			"type": "http"
+			"tools": ["*"]
 		},
 		"bluebird-cosmosdb": {
-			"url": "https://mcp.bluebird-ai.net/",
 			"type": "http",
+			"url": "https://mcp.bluebird-ai.net/",
 			"headers": {
 				"x-mcp-ec-organization": "msdata",
 				"x-mcp-ec-project": "CosmosDB",
 				"x-mcp-ec-repository": "CosmosDB",
 				"x-mcp-ec-branch": "master"
-			}
+			},
+			"tools": ["*"]
 		},
 		"ado": {
-			"tools": [
-				"*"
-			],
 			"type": "stdio",
 			"command": "npx",
 			"args": [
@@ -26,19 +25,17 @@
 				"msdata",
 				"-a",
 				"azcli"
-			]
+			],
+			"tools": ["*"]
 		},
 		"rcakit": {
-			"tools": [
-				"*"
-			],
 			"type": "http",
 			"url": "https://coslsmcp-app.livelybeach-8f6a50c5.eastus2.azurecontainerapps.io/mcp",
 			"headers": {
 				"X-User-Alias": "pimehr",
 				"X-Tenant": "cosmosdb"
-			}
+			},
+			"tools": ["*"]
 		}
-	},
-	"inputs": []
+	}
 }

@@ -17,7 +17,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 
 # Step counter for progress display (auto-increments — no need to renumber steps)
 $script:CurrentStep = 0
-$TotalSteps = 14
+$TotalSteps = 16
 function Write-Step($label) {
     $script:CurrentStep++
     Write-Host "`n[$script:CurrentStep/$TotalSteps] $label" -ForegroundColor Yellow
@@ -434,14 +434,13 @@ if ($WhkdrcSource -eq $WhkdrcTarget) {
     Write-Host "whkdrc not found in repo. Skipping." -ForegroundColor Gray
 }
 
-# Create default komorebi.json symlink if it doesn't exist (defaults to home profile)
+# Create default komorebi.json if it doesn't exist (copy from laptop profile as base)
 $KomorebiDefaultConfig = "$KomorebiConfigHome\komorebi.json"
-$KomorebiHomeConfig = "$KomorebiConfigHome\komorebi.home.json"
+$KomorebiLaptopConfig = "$KomorebiConfigHome\komorebi.laptop.json"
 
-if (-not (Test-Path $KomorebiDefaultConfig) -and (Test-Path $KomorebiHomeConfig)) {
-    New-Item -ItemType SymbolicLink -Path $KomorebiDefaultConfig -Target $KomorebiHomeConfig -Force | Out-Null
-    Write-Host "Created default komorebi.json symlink (pointing to home profile)." -ForegroundColor Gray
-    Write-Host "Use switch-komorebi.ps1 to change profiles." -ForegroundColor Gray
+if (-not (Test-Path $KomorebiDefaultConfig) -and (Test-Path $KomorebiLaptopConfig)) {
+    Copy-Item -Path $KomorebiLaptopConfig -Destination $KomorebiDefaultConfig
+    Write-Host "Created komorebi.json from laptop profile. Edit it for this machine or use switch-komorebi.ps1 to switch profiles." -ForegroundColor Gray
 }
 
 # Register Komorebi autostart (scheduled task)
@@ -571,6 +570,19 @@ if (Test-Path $YasbExe) {
 }
 
 # ------------------------------------------------------------------------------
+# VM Monitor Detection (komorebi.json + YASB screen)
+# ------------------------------------------------------------------------------
+Write-Step "VM monitor detection..."
+
+$SetupVmScript = "$ConfigPath\komorebi\setup-vm-monitor.ps1"
+if (Test-Path $SetupVmScript) {
+    Write-Host "Running setup-vm-monitor.ps1..." -ForegroundColor Gray
+    & $SetupVmScript
+} else {
+    Write-Host "setup-vm-monitor.ps1 not found, skipping." -ForegroundColor Gray
+}
+
+# ------------------------------------------------------------------------------
 # Neovim Dependencies (required for LazyVim plugins)
 # ------------------------------------------------------------------------------
 Write-Step "Neovim dependencies..."
@@ -697,21 +709,80 @@ if (-not $GsInstalled) {
     # Also check for gswin64c which is the Windows executable name
     $GsInstalled = Get-Command gswin64c -ErrorAction SilentlyContinue
 }
+if (-not $GsInstalled) {
+    # Check if installed but not in PATH
+    $gsDir = Get-ChildItem "C:\Program Files\gs" -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1
+    if ($gsDir -and (Test-Path "$($gsDir.FullName)\bin\gswin64c.exe")) {
+        $gsBin = "$($gsDir.FullName)\bin"
+        $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+        if ($userPath -notlike "*$gsBin*") {
+            [System.Environment]::SetEnvironmentVariable("Path", "$userPath;$gsBin", "User")
+        }
+        $env:Path += ";$gsBin"
+        Write-Host "Ghostscript found, added to PATH." -ForegroundColor Green
+        $GsInstalled = $true
+    }
+}
 if ($GsInstalled) {
     Write-Host "Ghostscript already installed." -ForegroundColor Green
 } else {
     Write-Host "Installing Ghostscript..." -ForegroundColor Gray
-    if (Get-Command winget -ErrorAction SilentlyContinue) {
-        winget install ArtifexSoftware.GhostScript -s winget --accept-package-agreements --accept-source-agreements
+    # Ghostscript was removed from winget; download installer directly
+    $gsVersion = "10.05.1"
+    $gsInstallerUrl = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10051/gs10051w64.exe"
+    $gsInstaller = "$env:TEMP\gs_installer.exe"
+    try {
+        Invoke-WebRequest -Uri $gsInstallerUrl -OutFile $gsInstaller -UseBasicParsing
+        Start-Process -FilePath $gsInstaller -ArgumentList "/S" -Wait
+        Remove-Item $gsInstaller -ErrorAction SilentlyContinue
         $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-    } else {
-        Write-Warning "winget not found. Install Ghostscript manually."
+        # Ghostscript installer doesn't add itself to PATH; do it manually
+        $gsBin = "C:\Program Files\gs\gs$gsVersion\bin"
+        if ((Test-Path $gsBin) -and ($env:Path -notlike "*$gsBin*")) {
+            $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+            if ($userPath -notlike "*$gsBin*") {
+                [System.Environment]::SetEnvironmentVariable("Path", "$userPath;$gsBin", "User")
+            }
+            $env:Path += ";$gsBin"
+        }
+        Write-Host "Ghostscript $gsVersion installed." -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to download Ghostscript. Install manually from https://ghostscript.com/releases/gsdnld.html"
     }
+}
+
+# 7-Zip (required by mason.nvim for extracting packages)
+$SevenZipInstalled = Get-Command 7z -ErrorAction SilentlyContinue
+if ($SevenZipInstalled) {
+    Write-Host "7-Zip already installed." -ForegroundColor Green
+} else {
+    Write-Host "Installing 7-Zip..." -ForegroundColor Gray
+    if (Get-Command winget -ErrorAction SilentlyContinue) {
+        winget install 7zip.7zip -s winget --accept-package-agreements --accept-source-agreements
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+    } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+        scoop install 7zip
+    } else {
+        Write-Warning "Neither winget nor scoop found. Install 7-Zip manually."
+    }
+}
+
+# Add Git's Unix tools to PATH for mason.nvim (provides unzip, gzip)
+$GitUsrBin = "C:\Program Files\Git\usr\bin"
+if ((Test-Path $GitUsrBin) -and ($env:Path -notlike "*Git\usr\bin*")) {
+    Write-Host "Adding Git Unix tools to PATH (unzip, gzip)..." -ForegroundColor Gray
+    $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    if ($userPath -notlike "*Git\usr\bin*") {
+        [System.Environment]::SetEnvironmentVariable("Path", "$userPath;$GitUsrBin", "User")
+    }
+    $env:Path += ";$GitUsrBin"
+    Write-Host "Git Unix tools added to PATH." -ForegroundColor Green
 }
 
 # neovim npm package (required for Node.js provider)
 if (Get-Command npm -ErrorAction SilentlyContinue) {
-    $neovimNpmInstalled = npm list -g neovim 2>$null | Select-String "neovim"
+    $neovimNpmInstalled = $null
+    try { $neovimNpmInstalled = npm list -g neovim 2>$null | Select-String "neovim" } catch { }
     if ($neovimNpmInstalled) {
         Write-Host "neovim npm package already installed." -ForegroundColor Green
     } else {
@@ -795,11 +866,28 @@ if (Get-Command nvim -ErrorAction SilentlyContinue) {
 
 # Install tree-sitter-cli (required for Neovim tree-sitter parser compilation)
 if (Get-Command npm -ErrorAction SilentlyContinue) {
+    # Ensure npm global bin directory is in PATH (needed for globally installed tools)
+    $npmPrefix = (npm config get prefix 2>$null)
+    if ($npmPrefix -and (Test-Path $npmPrefix) -and ($env:Path -notlike "*$([regex]::Escape($npmPrefix))*")) {
+        $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+        if ($userPath -notlike "*$([regex]::Escape($npmPrefix))*") {
+            [System.Environment]::SetEnvironmentVariable("Path", "$userPath;$npmPrefix", "User")
+            Write-Host "Added npm global bin to user PATH: $npmPrefix" -ForegroundColor Gray
+        }
+        $env:Path += ";$npmPrefix"
+    }
+
     $treeSitterInstalled = Get-Command tree-sitter -ErrorAction SilentlyContinue
     if (-not $treeSitterInstalled) {
         Write-Host "Installing tree-sitter-cli..." -ForegroundColor Gray
         npm install -g tree-sitter-cli
-        Write-Host "tree-sitter-cli installed." -ForegroundColor Green
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+        if (Get-Command tree-sitter -ErrorAction SilentlyContinue) {
+            Write-Host "tree-sitter-cli installed." -ForegroundColor Green
+        } else {
+            Write-Warning "tree-sitter-cli installed via npm but not found in PATH. Restart your terminal."
+        }
     } else {
         Write-Host "tree-sitter-cli already installed." -ForegroundColor Green
     }
@@ -870,11 +958,15 @@ if (Test-Path $AhkScript) {
             # Find AutoHotkey executable
             $ahkExe = (Get-Command autohotkey -ErrorAction SilentlyContinue).Source
             if (-not $ahkExe) {
-                # Common install locations
-                $ahkExe = "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe"
-                if (-not (Test-Path $ahkExe)) {
-                    $ahkExe = "C:\Program Files\AutoHotkey\AutoHotkey.exe"
-                }
+                # Check common install locations (winget installs to LOCALAPPDATA)
+                $ahkCandidates = @(
+                    "$env:LOCALAPPDATA\Programs\AutoHotkey\v2\AutoHotkey64.exe",
+                    "$env:LOCALAPPDATA\Programs\AutoHotkey\v2\AutoHotkey32.exe",
+                    "C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe",
+                    "C:\Program Files\AutoHotkey\v2\AutoHotkey.exe",
+                    "C:\Program Files\AutoHotkey\AutoHotkey.exe"
+                )
+                $ahkExe = $ahkCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
             }
 
             if ($ahkExe -and (Test-Path $ahkExe)) {
@@ -896,6 +988,43 @@ if (Test-Path $AhkScript) {
 }
 
 # ------------------------------------------------------------------------------
+# Copilot CLI MCP Config
+# ------------------------------------------------------------------------------
+Write-Step "Copilot CLI MCP config..."
+
+$CopilotMcpSource = "$ConfigPath\copilot\mcp-config.json"
+$CopilotMcpTarget = "$env:USERPROFILE\.copilot\mcp-config.json"
+
+if (Test-Path $CopilotMcpSource) {
+    # Ensure ~/.copilot directory exists
+    New-Item -ItemType Directory -Path "$env:USERPROFILE\.copilot" -Force -ErrorAction SilentlyContinue | Out-Null
+
+    # Check if already hardlinked (same file)
+    $needsLink = $true
+    if (Test-Path $CopilotMcpTarget) {
+        $sourceLinks = fsutil hardlink list $CopilotMcpSource 2>$null
+        $targetPath = $CopilotMcpTarget.Replace("$env:HOMEDRIVE", "")
+        if ($sourceLinks -and ($sourceLinks -contains $targetPath)) {
+            Write-Host "Copilot CLI MCP config already linked." -ForegroundColor Green
+            $needsLink = $false
+        } else {
+            # Exists but not linked — back up and replace
+            $backupPath = "$CopilotMcpTarget.backup"
+            Copy-Item $CopilotMcpTarget $backupPath -Force
+            Remove-Item $CopilotMcpTarget -Force
+            Write-Host "Backed up existing MCP config to: $backupPath" -ForegroundColor Gray
+        }
+    }
+
+    if ($needsLink) {
+        New-Item -ItemType HardLink -Path $CopilotMcpTarget -Target $CopilotMcpSource | Out-Null
+        Write-Host "Copilot CLI MCP config linked." -ForegroundColor Green
+    }
+} else {
+    Write-Host "Copilot MCP config not found in repo. Skipping." -ForegroundColor Gray
+}
+
+# ------------------------------------------------------------------------------
 # Done
 # ------------------------------------------------------------------------------
 Write-Host "`n=== Setup Complete ===" -ForegroundColor Cyan
@@ -909,3 +1038,4 @@ Write-Host "      Alt+Ctrl+O = office.desktop, Alt+Ctrl+Shift+O = laptop.office"
 Write-Host "  - WezTerm: Launch from Start Menu or run 'wezterm'" -ForegroundColor Gray
 Write-Host "  - YASB: Starts automatically at login, or run from Program Files" -ForegroundColor Gray
 Write-Host "  - UTC.ahk: Starts automatically at login (Alt+U=UTC, Alt+I=IST, Alt+P=PST/PDT)" -ForegroundColor Gray
+Write-Host "  - Copilot CLI: MCP servers configured from repo (edit copilot/mcp-config.json)" -ForegroundColor Gray
