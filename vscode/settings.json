@@ -4,7 +4,7 @@
         "microsoft",
         "msdata"
     ],
-    "chat.agent.maxRequests": 100,
+    "chat.agent.maxRequests": 400,
     "search.followSymlinks": false,
     "diffEditor.renderSideBySide": false,
     "git.autofetch": true,
@@ -43,5 +43,15 @@
             "password": ""
         }
     ],
-    "github.copilot.nextEditSuggestions.enabled": true
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "chat.tools.terminal.autoApprove": {
+        "git add": true,
+        "git commit": true,
+        "Push-Location": true,
+        "Pop-Location": true,
+        "ForEach-Object": true,
+        "bundle": true
+    },
+    "diffEditor.ignoreTrimWhitespace": false,
+    "jupyter.interactiveWindow.creationMode": "perFile"
 }
