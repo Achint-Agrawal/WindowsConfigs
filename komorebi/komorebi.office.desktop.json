@@ -85,11 +85,7 @@
         {
           "name": "V",
           "layout": "BSP"
-        }
-      ]
-    },
-    {
-      "workspaces": [
+        },
         {
           "name": "VI",
           "layout": "BSP"
@@ -105,7 +101,11 @@
         {
           "name": "IX",
           "layout": "BSP"
-        },
+        }
+      ]
+    },
+    {
+      "workspaces": [
         {
           "name": "X",
           "layout": "BSP"
