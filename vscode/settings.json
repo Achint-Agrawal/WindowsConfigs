@@ -44,5 +44,11 @@
             "password": ""
         }
     ],
-    "github.copilot.nextEditSuggestions.enabled": true
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "chat.mcp.serverSampling": {
+        "Azure MCP Server Provider: Azure MCP": {
+            "allowedDuringChat": true
+        }
+    },
+    "docker.extension.enableComposeLanguageServer": false
 }

@@ -12,8 +12,11 @@ param()
 $ErrorActionPreference = 'Stop'
 $yasbConfig = "$HOME\.config\yasb\config.yaml"
 
+# Refresh PATH from registry (whkd may have a stale PATH)
+$env:PATH = [Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [Environment]::GetEnvironmentVariable("PATH", "User")
+
 if (-not (Get-Command yasbc -ErrorAction SilentlyContinue)) {
-    Write-Warning "yasbc not found in PATH."
+    Write-Warning "yasbc not found."
     return
 }
 if (-not (Test-Path $yasbConfig)) {
@@ -52,5 +55,5 @@ Write-Host "Added '$displayName' to primary-bar screens." -ForegroundColor Yello
 # Restart YASB
 Get-Process yasb -ErrorAction SilentlyContinue | Stop-Process -Force
 Start-Sleep -Milliseconds 500
-Start-Process 'C:\Program Files\YASB\yasb.exe'
+Start-Process yasb
 Write-Host "YASB restarted." -ForegroundColor Green

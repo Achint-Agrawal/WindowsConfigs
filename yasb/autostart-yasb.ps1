@@ -20,9 +20,9 @@ param(
   [switch]$Force
 )
 
-$yasbExe = "C:\Program Files\YASB\yasb.exe"
-if (-not (Test-Path $yasbExe)) {
-  Write-Error "YASB executable not found at: $yasbExe"; exit 1
+$yasbExe = (Get-Command yasb -ErrorAction SilentlyContinue).Source
+if (-not $yasbExe) {
+  Write-Error "YASB executable not found in PATH."; exit 1
 }
 
 if (-not ($RegisterTask -or $CreateStartupShortcut)) {

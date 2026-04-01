@@ -482,11 +482,10 @@ if ($yasbProcess) {
     Start-Sleep -Milliseconds 500
 }
 
-$YasbExe = "C:\Program Files\YASB\yasb.exe"
-$YasbInstalled = Test-Path $YasbExe
+$YasbExe = (Get-Command yasb -ErrorAction SilentlyContinue).Source
 
-if ($YasbInstalled) {
-    Write-Host "YASB already installed." -ForegroundColor Gray
+if ($YasbExe) {
+    Write-Host "YASB already installed at: $YasbExe" -ForegroundColor Gray
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         winget upgrade AmN.yasb -s winget --accept-package-agreements --accept-source-agreements 2>$null
     }
@@ -494,6 +493,7 @@ if ($YasbInstalled) {
     Write-Host "Installing YASB..." -ForegroundColor Gray
     if (Get-Command winget -ErrorAction SilentlyContinue) {
         winget install AmN.yasb -s winget --accept-package-agreements --accept-source-agreements
+        $YasbExe = (Get-Command yasb -ErrorAction SilentlyContinue).Source
     } else {
         Write-Warning "winget not found. Install YASB manually from https://github.com/amnweb/yasb"
     }
@@ -545,7 +545,7 @@ if ($YasbConfigSource -eq $YasbConfigTarget) {
 }
 
 # Register YASB autostart (scheduled task)
-if (Test-Path $YasbExe) {
+if ($YasbExe) {
     $taskName = 'YASB Autostart'
     $existingTask = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
     
@@ -1036,6 +1036,6 @@ Write-Host "  - Switch Komorebi profile via whkd shortcuts:" -ForegroundColor Gr
 Write-Host "      Alt+Ctrl+H = home, Alt+Ctrl+G = ghar, Alt+Ctrl+L = laptop" -ForegroundColor Gray
 Write-Host "      Alt+Ctrl+O = office.desktop, Alt+Ctrl+Shift+O = laptop.office" -ForegroundColor Gray
 Write-Host "  - WezTerm: Launch from Start Menu or run 'wezterm'" -ForegroundColor Gray
-Write-Host "  - YASB: Starts automatically at login, or run from Program Files" -ForegroundColor Gray
+Write-Host "  - YASB: Starts automatically at login" -ForegroundColor Gray
 Write-Host "  - UTC.ahk: Starts automatically at login (Alt+U=UTC, Alt+I=IST, Alt+P=PST/PDT)" -ForegroundColor Gray
 Write-Host "  - Copilot CLI: MCP servers configured from repo (edit copilot/mcp-config.json)" -ForegroundColor Gray

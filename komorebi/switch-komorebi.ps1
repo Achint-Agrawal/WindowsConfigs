@@ -30,4 +30,34 @@ for ($m = 0; $m -lt $config.monitors.Count; $m++) {
     }
 }
 
-Start-Process 'C:\Program Files\YASB\yasb.exe'
+# Reset YASB config and ensure current displays are listed before starting YASB
+$yasbConfig = "$HOME\.config\yasb\config.yaml"
+git -C "$HOME\.config" checkout -- yasb/config.yaml 2>$null
+
+# Refresh PATH from registry (whkd may have a stale PATH)
+$env:PATH = [Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [Environment]::GetEnvironmentVariable("PATH", "User")
+
+if (Get-Command yasbc -ErrorAction SilentlyContinue) {
+    $yasbOutput = yasbc monitor-information 2>&1
+    $matches = $yasbOutput | Select-String 'Name:\s*(.+)'
+    if ($matches) {
+        $yasbContent = Get-Content $yasbConfig -Raw
+        foreach ($m in $matches) {
+            $displayName = $m.Matches[0].Groups[1].Value.Trim()
+            if (-not $yasbContent.Contains("'$displayName'")) {
+                $lines = $yasbContent -split "`n"
+                $added = $false
+                $newLines = foreach ($line in $lines) {
+                    if (-not $added -and $line -match "screens:\s*\[") {
+                        $line -replace "(screens:\s*\[)", "`$1'$displayName', "
+                        $added = $true
+                    } else { $line }
+                }
+                $yasbContent = $newLines -join "`n"
+            }
+        }
+        $yasbContent | Set-Content $yasbConfig -NoNewline -Encoding UTF8
+    }
+}
+
+Start-Process yasb
