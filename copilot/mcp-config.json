@@ -36,6 +36,12 @@
 				"X-Tenant": "cosmosdb"
 			},
 			"tools": ["*"]
+		},
+		"kusto": {
+			"type": "stdio",
+			"command": "npx",
+			"args": ["@mcp-apps/kusto-mcp-server"],
+			"tools": ["*"]
 		}
 	}
 }

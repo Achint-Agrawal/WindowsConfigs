@@ -17,7 +17,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 
 # Step counter for progress display (auto-increments — no need to renumber steps)
 $script:CurrentStep = 0
-$TotalSteps = 16
+$TotalSteps = 17
 function Write-Step($label) {
     $script:CurrentStep++
     Write-Host "`n[$script:CurrentStep/$TotalSteps] $label" -ForegroundColor Yellow
@@ -988,40 +988,90 @@ if (Test-Path $AhkScript) {
 }
 
 # ------------------------------------------------------------------------------
-# Copilot CLI MCP Config
+# Copilot CLI Configuration
 # ------------------------------------------------------------------------------
-Write-Step "Copilot CLI MCP config..."
+Write-Step "Copilot CLI configuration..."
 
-$CopilotMcpSource = "$ConfigPath\copilot\mcp-config.json"
-$CopilotMcpTarget = "$env:USERPROFILE\.copilot\mcp-config.json"
+$CopilotRepoDir = "$ConfigPath\copilot"
+$CopilotRuntimeDir = "$env:USERPROFILE\.copilot"
 
-if (Test-Path $CopilotMcpSource) {
-    # Ensure ~/.copilot directory exists
-    New-Item -ItemType Directory -Path "$env:USERPROFILE\.copilot" -Force -ErrorAction SilentlyContinue | Out-Null
+if (Test-Path $CopilotRepoDir) {
+    New-Item -ItemType Directory -Path $CopilotRuntimeDir -Force -ErrorAction SilentlyContinue | Out-Null
 
-    # Check if already hardlinked (same file)
-    $needsLink = $true
-    if (Test-Path $CopilotMcpTarget) {
-        $sourceLinks = fsutil hardlink list $CopilotMcpSource 2>$null
-        $targetPath = $CopilotMcpTarget.Replace("$env:HOMEDRIVE", "")
-        if ($sourceLinks -and ($sourceLinks -contains $targetPath)) {
-            Write-Host "Copilot CLI MCP config already linked." -ForegroundColor Green
-            $needsLink = $false
+    # --- MCP config (copy) ---
+    $mcpSource = "$CopilotRepoDir\mcp-config.json"
+    $mcpTarget = "$CopilotRuntimeDir\mcp-config.json"
+    if (Test-Path $mcpSource) {
+        if (Test-Path $mcpTarget) {
+            Copy-Item $mcpTarget "$mcpTarget.backup" -Force
+        }
+        Copy-Item $mcpSource $mcpTarget -Force
+        Write-Host "  MCP config applied." -ForegroundColor Green
+    }
+
+    # --- Custom instructions (copy) ---
+    $instrSource = "$CopilotRepoDir\copilot-instructions.md"
+    $instrTarget = "$CopilotRuntimeDir\copilot-instructions.md"
+    if (Test-Path $instrSource) {
+        if (Test-Path $instrTarget) {
+            Copy-Item $instrTarget "$instrTarget.backup" -Force
+        }
+        Copy-Item $instrSource $instrTarget -Force
+        Write-Host "  Custom instructions applied." -ForegroundColor Green
+    }
+
+    # --- Portable preferences (merge into config.json) ---
+    $portableSource = "$CopilotRepoDir\config.portable.json"
+    $configTarget = "$CopilotRuntimeDir\config.json"
+    if (Test-Path $portableSource) {
+        $portable = Get-Content $portableSource -Raw | ConvertFrom-Json
+        if (Test-Path $configTarget) {
+            $local = Get-Content $configTarget -Raw | ConvertFrom-Json
         } else {
-            # Exists but not linked — back up and replace
-            $backupPath = "$CopilotMcpTarget.backup"
-            Copy-Item $CopilotMcpTarget $backupPath -Force
-            Remove-Item $CopilotMcpTarget -Force
-            Write-Host "Backed up existing MCP config to: $backupPath" -ForegroundColor Gray
+            $local = [PSCustomObject]@{}
+        }
+        # Merge portable keys into local config
+        foreach ($prop in $portable.PSObject.Properties) {
+            if ($local.PSObject.Properties[$prop.Name]) {
+                $local.PSObject.Properties[$prop.Name].Value = $prop.Value
+            } else {
+                $local | Add-Member -NotePropertyName $prop.Name -NotePropertyValue $prop.Value
+            }
+        }
+        $local | ConvertTo-Json -Depth 10 | Set-Content $configTarget -Encoding UTF8
+        Write-Host "  Portable preferences merged into config.json." -ForegroundColor Green
+    }
+
+    # --- Skills directory (junction) ---
+    $skillsSource = "$CopilotRepoDir\skills"
+    $skillsTarget = "$CopilotRuntimeDir\skills"
+    if (Test-Path $skillsSource) {
+        if (Test-Path $skillsTarget) {
+            $existingLink = Get-Item $skillsTarget -Force -ErrorAction SilentlyContinue
+            if ($existingLink.LinkType -eq "Junction" -and ($existingLink.Target -contains $skillsSource)) {
+                Write-Host "  Skills directory already linked." -ForegroundColor Green
+            } else {
+                # Back up and replace
+                if ($existingLink.LinkType) {
+                    # Remove existing junction/symlink
+                    (Get-Item $skillsTarget).Delete()
+                } else {
+                    # Regular directory — move aside
+                    Rename-Item $skillsTarget "$skillsTarget.backup" -Force
+                    Write-Host "  Backed up existing skills to: $skillsTarget.backup" -ForegroundColor Gray
+                }
+                New-Item -ItemType Junction -Path $skillsTarget -Target $skillsSource | Out-Null
+                Write-Host "  Skills directory linked." -ForegroundColor Green
+            }
+        } else {
+            New-Item -ItemType Junction -Path $skillsTarget -Target $skillsSource | Out-Null
+            Write-Host "  Skills directory linked." -ForegroundColor Green
         }
     }
 
-    if ($needsLink) {
-        New-Item -ItemType HardLink -Path $CopilotMcpTarget -Target $CopilotMcpSource | Out-Null
-        Write-Host "Copilot CLI MCP config linked." -ForegroundColor Green
-    }
+    Write-Host "Copilot CLI configuration complete." -ForegroundColor Green
 } else {
-    Write-Host "Copilot MCP config not found in repo. Skipping." -ForegroundColor Gray
+    Write-Host "Copilot config folder not found in repo. Skipping." -ForegroundColor Gray
 }
 
 # ------------------------------------------------------------------------------
@@ -1038,4 +1088,4 @@ Write-Host "      Alt+Ctrl+O = office.desktop, Alt+Ctrl+Shift+O = laptop.office"
 Write-Host "  - WezTerm: Launch from Start Menu or run 'wezterm'" -ForegroundColor Gray
 Write-Host "  - YASB: Starts automatically at login" -ForegroundColor Gray
 Write-Host "  - UTC.ahk: Starts automatically at login (Alt+U=UTC, Alt+I=IST, Alt+P=PST/PDT)" -ForegroundColor Gray
-Write-Host "  - Copilot CLI: MCP servers configured from repo (edit copilot/mcp-config.json)" -ForegroundColor Gray
+Write-Host "  - Copilot CLI: MCP servers, skills, and preferences configured from repo (edit copilot/)" -ForegroundColor Gray
