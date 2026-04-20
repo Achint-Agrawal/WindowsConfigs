@@ -998,17 +998,6 @@ $CopilotRuntimeDir = "$env:USERPROFILE\.copilot"
 if (Test-Path $CopilotRepoDir) {
     New-Item -ItemType Directory -Path $CopilotRuntimeDir -Force -ErrorAction SilentlyContinue | Out-Null
 
-    # --- MCP config (copy) ---
-    $mcpSource = "$CopilotRepoDir\mcp-config.json"
-    $mcpTarget = "$CopilotRuntimeDir\mcp-config.json"
-    if (Test-Path $mcpSource) {
-        if (Test-Path $mcpTarget) {
-            Copy-Item $mcpTarget "$mcpTarget.backup" -Force
-        }
-        Copy-Item $mcpSource $mcpTarget -Force
-        Write-Host "  MCP config applied." -ForegroundColor Green
-    }
-
     # --- Custom instructions (copy) ---
     $instrSource = "$CopilotRepoDir\copilot-instructions.md"
     $instrTarget = "$CopilotRuntimeDir\copilot-instructions.md"
@@ -1042,11 +1031,11 @@ if (Test-Path $CopilotRepoDir) {
         Write-Host "  Portable preferences merged into config.json." -ForegroundColor Green
     }
 
-    # Skills are installed separately from achintStuff (private repo).
+    # MCP configs and skills are installed separately from achintStuff (private repo).
     # Run: achintStuff\install-copilot-skills.ps1
 
     Write-Host "Copilot CLI configuration complete." -ForegroundColor Green
-    Write-Host "  NOTE: Run achintStuff\install-copilot-skills.ps1 for Copilot skills." -ForegroundColor Yellow
+    Write-Host "  NOTE: Run achintStuff\install-copilot-skills.ps1 for MCP configs and skills." -ForegroundColor Yellow
 } else {
     Write-Host "Copilot config folder not found in repo. Skipping." -ForegroundColor Gray
 }
@@ -1065,4 +1054,4 @@ Write-Host "      Alt+Ctrl+O = office.desktop, Alt+Ctrl+Shift+O = laptop.office"
 Write-Host "  - WezTerm: Launch from Start Menu or run 'wezterm'" -ForegroundColor Gray
 Write-Host "  - YASB: Starts automatically at login" -ForegroundColor Gray
 Write-Host "  - UTC.ahk: Starts automatically at login (Alt+U=UTC, Alt+I=IST, Alt+P=PST/PDT)" -ForegroundColor Gray
-Write-Host "  - Copilot CLI: MCP servers, skills, and preferences configured from repo (edit copilot/)" -ForegroundColor Gray
+Write-Host "  - Copilot CLI: Preferences configured from repo, MCP + skills from achintStuff (private)" -ForegroundColor Gray

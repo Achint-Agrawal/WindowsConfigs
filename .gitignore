@@ -89,6 +89,10 @@ configstore/**
 # GitHub Copilot generated cache/state (not useful across devices)
 github-copilot/
 
+# MCP configs contain internal service URLs and org names (kept in private repo)
+copilot/mcp-config.json
+vscode/mcp.json
+
 # Lock files usually not needed unless you want deterministic plugin fetch
 package-lock.json
 pnpm-lock.yaml

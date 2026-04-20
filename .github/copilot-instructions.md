@@ -27,10 +27,11 @@ Windows dotfiles repo — tiling WM setup, terminal configs, and editor settings
 | `~/.config/whkdrc` | `whkdrc` | in-place |
 | `~/.config/yasb` | `yasb/` | in-place |
 | `$KOMOREBI_CONFIG_HOME` | `komorebi/` | env var |
-| `~/.copilot/mcp-config.json` | `copilot/mcp-config.json` | copy |
 | `~/.copilot/copilot-instructions.md` | `copilot/copilot-instructions.md` | copy |
 | `~/.copilot/config.json` (partial) | `copilot/config.portable.json` | merge |
+| `~/.copilot/mcp-config.json` | `achintStuff/mcp-configs/` | copy (private repo) |
 | `~/.copilot/skills/` | `achintStuff/copilot-skills/` | copy (private repo) |
+| `%APPDATA%\Code\User\mcp.json` | `achintStuff/mcp-configs/` | copy (private repo) |
 
 ## Making Changes
 
