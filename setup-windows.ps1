@@ -1031,11 +1031,27 @@ if (Test-Path $CopilotRepoDir) {
         Write-Host "  Portable preferences merged into config.json." -ForegroundColor Green
     }
 
-    # MCP configs and skills are installed separately from achintStuff (private repo).
+    # --- Skills from this repo (generic, non-private) ---
+    $RepoSkillsDir = "$CopilotRepoDir\skills"
+    if (Test-Path $RepoSkillsDir) {
+        New-Item -ItemType Directory -Path "$CopilotRuntimeDir\skills" -Force -ErrorAction SilentlyContinue | Out-Null
+        Get-ChildItem $RepoSkillsDir -Directory | ForEach-Object {
+            $skillName = $_.Name
+            $source = $_.FullName
+            $target = "$CopilotRuntimeDir\skills\$skillName"
+            if (Test-Path $target) {
+                Remove-Item $target -Recurse -Force
+            }
+            Copy-Item $source $target -Recurse -Force
+            Write-Host "  Installed skill: $skillName" -ForegroundColor Green
+        }
+    }
+
+    # MCP configs and private skills are installed separately from achintStuff.
     # Run: achintStuff\install-copilot-skills.ps1
 
     Write-Host "Copilot CLI configuration complete." -ForegroundColor Green
-    Write-Host "  NOTE: Run achintStuff\install-copilot-skills.ps1 for MCP configs and skills." -ForegroundColor Yellow
+    Write-Host "  NOTE: Run achintStuff\install-copilot-skills.ps1 for MCP configs and private skills." -ForegroundColor Yellow
 } else {
     Write-Host "Copilot config folder not found in repo. Skipping." -ForegroundColor Gray
 }
