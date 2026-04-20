@@ -27,7 +27,7 @@ Windows dotfiles repo — tiling WM setup, terminal configs, and editor settings
 | `~/.config/whkdrc` | `whkdrc` | in-place |
 | `~/.config/yasb` | `yasb/` | in-place |
 | `$KOMOREBI_CONFIG_HOME` | `komorebi/` | env var |
-| `~/.copilot/copilot-instructions.md` | `copilot/copilot-instructions.md` | copy |
+| `~/.copilot/copilot-instructions.md` | `copilot/copilot-instructions.md` | symlink |
 | `~/.copilot/config.json` (partial) | `copilot/config.portable.json` | merge |
 | `~/.copilot/mcp-config.json` | `achintStuff/mcp-configs/` | copy (private repo) |
 | `~/.copilot/skills/` | `achintStuff/copilot-skills/` | copy (private repo) |

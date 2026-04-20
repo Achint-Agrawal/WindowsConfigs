@@ -998,15 +998,15 @@ $CopilotRuntimeDir = "$env:USERPROFILE\.copilot"
 if (Test-Path $CopilotRepoDir) {
     New-Item -ItemType Directory -Path $CopilotRuntimeDir -Force -ErrorAction SilentlyContinue | Out-Null
 
-    # --- Custom instructions (copy) ---
+    # --- Custom instructions (symlink) ---
     $instrSource = "$CopilotRepoDir\copilot-instructions.md"
     $instrTarget = "$CopilotRuntimeDir\copilot-instructions.md"
     if (Test-Path $instrSource) {
-        if (Test-Path $instrTarget) {
-            Copy-Item $instrTarget "$instrTarget.backup" -Force
-        }
-        Copy-Item $instrSource $instrTarget -Force
-        Write-Host "  Custom instructions applied." -ForegroundColor Green
+        New-Item -ItemType SymbolicLink `
+            -Path $instrTarget `
+            -Target $instrSource `
+            -Force | Out-Null
+        Write-Host "  Custom instructions symlinked." -ForegroundColor Green
     }
 
     # --- Portable preferences (merge into config.json) ---
