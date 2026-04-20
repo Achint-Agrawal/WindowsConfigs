@@ -30,7 +30,7 @@ Windows dotfiles repo — tiling WM setup, terminal configs, and editor settings
 | `~/.copilot/mcp-config.json` | `copilot/mcp-config.json` | copy |
 | `~/.copilot/copilot-instructions.md` | `copilot/copilot-instructions.md` | copy |
 | `~/.copilot/config.json` (partial) | `copilot/config.portable.json` | merge |
-| `~/.copilot/skills/` | `copilot/skills/` | junction |
+| `~/.copilot/skills/` | `achintStuff/copilot-skills/` | copy (private repo) |
 
 ## Making Changes
 

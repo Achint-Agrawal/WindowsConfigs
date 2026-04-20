@@ -1042,34 +1042,11 @@ if (Test-Path $CopilotRepoDir) {
         Write-Host "  Portable preferences merged into config.json." -ForegroundColor Green
     }
 
-    # --- Skills directory (junction) ---
-    $skillsSource = "$CopilotRepoDir\skills"
-    $skillsTarget = "$CopilotRuntimeDir\skills"
-    if (Test-Path $skillsSource) {
-        if (Test-Path $skillsTarget) {
-            $existingLink = Get-Item $skillsTarget -Force -ErrorAction SilentlyContinue
-            if ($existingLink.LinkType -eq "Junction" -and ($existingLink.Target -contains $skillsSource)) {
-                Write-Host "  Skills directory already linked." -ForegroundColor Green
-            } else {
-                # Back up and replace
-                if ($existingLink.LinkType) {
-                    # Remove existing junction/symlink
-                    (Get-Item $skillsTarget).Delete()
-                } else {
-                    # Regular directory — move aside
-                    Rename-Item $skillsTarget "$skillsTarget.backup" -Force
-                    Write-Host "  Backed up existing skills to: $skillsTarget.backup" -ForegroundColor Gray
-                }
-                New-Item -ItemType Junction -Path $skillsTarget -Target $skillsSource | Out-Null
-                Write-Host "  Skills directory linked." -ForegroundColor Green
-            }
-        } else {
-            New-Item -ItemType Junction -Path $skillsTarget -Target $skillsSource | Out-Null
-            Write-Host "  Skills directory linked." -ForegroundColor Green
-        }
-    }
+    # Skills are installed separately from achintStuff (private repo).
+    # Run: achintStuff\install-copilot-skills.ps1
 
     Write-Host "Copilot CLI configuration complete." -ForegroundColor Green
+    Write-Host "  NOTE: Run achintStuff\install-copilot-skills.ps1 for Copilot skills." -ForegroundColor Yellow
 } else {
     Write-Host "Copilot config folder not found in repo. Skipping." -ForegroundColor Gray
 }
