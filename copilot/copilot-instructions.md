@@ -9,3 +9,5 @@ When generating or editing Markdown files, follow markdownlint conventions:
 - Use consistent list marker style (dashes `-`).
 
 Do not make assumptions or guess. When unsure about something, verify it by reading the actual code, configs, or docs before answering. Always provide concrete code pointers (file paths, line numbers, function/class names) rather than vague descriptions. If you cannot locate the relevant code, say so explicitly instead of speculating.
+
+Never amend existing commits (`git commit --amend`) or force-push (`git push --force`, `git push --force-with-lease`). Always create new commits for changes. Do not rewrite, squash, or otherwise modify git history.
