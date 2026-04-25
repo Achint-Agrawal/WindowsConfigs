@@ -6,7 +6,7 @@ Windows dotfiles repo — tiling WM setup, terminal configs, and editor settings
 
 **Config-as-symlinks:** All configs live in this repo and are symlinked to their expected system locations. Edits here take effect immediately. `setup-windows.ps1` is the idempotent bootstrap script that installs tools (via Scoop/winget), creates symlinks, and registers autostart tasks.
 
-**Komorebi multi-profile system:** Each `komorebi/komorebi.<profile>.json` defines a complete monitor/workspace layout for a specific environment (home, laptop, office, etc.). `switch-komorebi.ps1 <profile>` stops YASB → restarts komorebi with the new config → re-applies workspace names (race condition fix) → restarts YASB. The `ValidateSet` in that script must be updated when adding new profiles. `komorebi.json` is a gitignored symlink to the active profile. `applications.json` holds per-app tiling rules shared across all profiles.
+**Komorebi multi-profile system:** Each `komorebi/komorebi.<profile>.json` defines a complete monitor/workspace layout for a specific environment (home, laptop, office, etc.). `switch-komorebi.ps1 <profile>` stops YASB → restarts komorebi with the new config → re-applies workspace names (race condition fix) → restarts YASB. The `ValidateSet` in that script must be updated when adding new profiles. `komorebi.json` is a gitignored copy of the active profile (not a symlink — symlinks break `komorebic start`). `applications.json` holds per-app tiling rules shared across all profiles.
 
 **Neovim:** LazyVim-based config. Custom plugins go in `nvim/lua/plugins/`. Uses Lazy.nvim for plugin management with `lazy-lock.json` tracked for reproducibility.
 
@@ -40,3 +40,7 @@ Windows dotfiles repo — tiling WM setup, terminal configs, and editor settings
 - **VS Code:** Changes via the junction are live in both directions.
 - **PowerShell scripts:** Use `-WhatIf` when available to test before running.
 - **New Komorebi profile:** Create `komorebi/komorebi.<name>.json`, add `<name>` to the `ValidateSet` in `switch-komorebi.ps1`, and add a whkd shortcut in `whkdrc`.
+
+## Troubleshooting
+
+The `troubleshooting/` folder at the repo root contains documentation for known issues and their fixes. When diagnosing and fixing a bug or issue in this repo, **always** create or update a markdown file in `troubleshooting/` documenting the symptom, root cause, fix, and prevention. Use descriptive filenames like `<component>-<short-description>.md` (e.g., `komorebi-start-fails-symlink.md`).
