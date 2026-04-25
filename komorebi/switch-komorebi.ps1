@@ -8,14 +8,21 @@ $target = "$HOME\.config\komorebi\komorebi.$ProfileName.json"
 
 if (-not (Test-Path $target)) { exit 1 }
 
-Get-Process yasb -ErrorAction SilentlyContinue | Stop-Process -Force
+$yasbProc = Get-Process yasb -ErrorAction SilentlyContinue
+if ($yasbProc) { Stop-Process -Id $yasbProc.Id -Force }
+
+# Replace komorebi.json symlink with a real copy of the target profile
+# (komorebic start fails to detect process when config is a symlink - known issue)
+$configFile = "$HOME\.config\komorebi\komorebi.json"
+Remove-Item $configFile -Force -ErrorAction SilentlyContinue
+Copy-Item $target $configFile
 
 # Start or restart komorebi with the new config
 if (Get-Process komorebi -ErrorAction SilentlyContinue) {
     komorebic stop --whkd --bar | Out-Null
     Start-Sleep -Milliseconds 500
 }
-komorebic start --whkd --config $target | Out-Null
+komorebic start --whkd
 
 # Wait for komorebi to initialize, then ensure workspace names are set
 # This fixes a race condition where initial_workspace_rules can create workspaces before names are applied

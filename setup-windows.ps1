@@ -435,10 +435,23 @@ if ($WhkdrcSource -eq $WhkdrcTarget) {
 }
 
 # Create default komorebi.json if it doesn't exist (copy from laptop profile as base)
+# Also fix stale symlinks — komorebic start fails when komorebi.json is a symlink (known issue)
 $KomorebiDefaultConfig = "$KomorebiConfigHome\komorebi.json"
 $KomorebiLaptopConfig = "$KomorebiConfigHome\komorebi.laptop.json"
 
-if (-not (Test-Path $KomorebiDefaultConfig) -and (Test-Path $KomorebiLaptopConfig)) {
+if (Test-Path $KomorebiDefaultConfig) {
+    $item = Get-Item $KomorebiDefaultConfig
+    if ($item.LinkType -eq 'SymbolicLink') {
+        $resolvedTarget = $item.Target
+        Remove-Item $KomorebiDefaultConfig -Force
+        if (Test-Path $resolvedTarget) {
+            Copy-Item -Path $resolvedTarget -Destination $KomorebiDefaultConfig
+        } elseif (Test-Path $KomorebiLaptopConfig) {
+            Copy-Item -Path $KomorebiLaptopConfig -Destination $KomorebiDefaultConfig
+        }
+        Write-Host "Replaced komorebi.json symlink with a real copy (symlinks break komorebic start)." -ForegroundColor Yellow
+    }
+} elseif (Test-Path $KomorebiLaptopConfig) {
     Copy-Item -Path $KomorebiLaptopConfig -Destination $KomorebiDefaultConfig
     Write-Host "Created komorebi.json from laptop profile. Edit it for this machine or use switch-komorebi.ps1 to switch profiles." -ForegroundColor Gray
 }
