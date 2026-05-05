@@ -798,15 +798,15 @@ For more information about configuration options, please visit the Wiki https://
     color: var(--text3);
 }
 .komorebi-stack .window.active {
-    background-color: var(--blue);
-    border: 1px solid rgba(68, 143, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 .komorebi-stack .window.active .label {
-    color: #ffffff;
-    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 600;
 }
 .komorebi-stack .window.active .icon {
-    color: #ffffff;
+    color: rgba(255, 255, 255, 0.85);
 }
 .komorebi-stack .window.button-1 {
     order: 1;
