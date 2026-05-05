@@ -23,6 +23,24 @@ function Write-Step($label) {
     Write-Host "`n[$script:CurrentStep/$TotalSteps] $label" -ForegroundColor Yellow
 }
 
+# Create a file symlink, requesting UAC elevation if needed.
+# (Directory junctions don't need this — only file symlinks require admin on Windows.)
+function New-SymlinkSafe {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [Parameter(Mandatory)][string]$Target
+    )
+    try {
+        New-Item -ItemType SymbolicLink -Path $Path -Target $Target -Force | Out-Null
+    } catch [System.UnauthorizedAccessException] {
+        Write-Host "  Requesting elevation for symlink: $Path" -ForegroundColor Gray
+        Start-Process powershell -Verb RunAs -Wait -ArgumentList @(
+            "-NoProfile", "-Command",
+            "New-Item -ItemType SymbolicLink -Path '$Path' -Target '$Target' -Force | Out-Null"
+        )
+    }
+}
+
 # ------------------------------------------------------------------------------
 # Oh My Posh Installation
 # ------------------------------------------------------------------------------
@@ -344,10 +362,10 @@ if (Test-Path $WezTermConfigSource) {
             } else {
                 Remove-Item $WezTermConfigTarget -Force
             }
-            New-Item -ItemType SymbolicLink -Path $WezTermConfigTarget -Target $sourceConfigFile -Force | Out-Null
+            New-SymlinkSafe -Path $WezTermConfigTarget -Target $sourceConfigFile
             Write-Host "WezTerm config symlinked!" -ForegroundColor Green
         } else {
-            New-Item -ItemType SymbolicLink -Path $WezTermConfigTarget -Target $sourceConfigFile -Force | Out-Null
+            New-SymlinkSafe -Path $WezTermConfigTarget -Target $sourceConfigFile
             Write-Host "WezTerm config symlinked!" -ForegroundColor Green
         }
     }
@@ -424,10 +442,10 @@ if ($WhkdrcSource -eq $WhkdrcTarget) {
         Write-Host "whkdrc already symlinked." -ForegroundColor Green
     } elseif (Test-Path $WhkdrcTarget) {
         Remove-Item $WhkdrcTarget -Force
-        New-Item -ItemType SymbolicLink -Path $WhkdrcTarget -Target $WhkdrcSource -Force | Out-Null
+        New-SymlinkSafe -Path $WhkdrcTarget -Target $WhkdrcSource
         Write-Host "whkdrc symlinked!" -ForegroundColor Green
     } else {
-        New-Item -ItemType SymbolicLink -Path $WhkdrcTarget -Target $WhkdrcSource -Force | Out-Null
+        New-SymlinkSafe -Path $WhkdrcTarget -Target $WhkdrcSource
         Write-Host "whkdrc symlinked!" -ForegroundColor Green
     }
 } else {
@@ -1015,10 +1033,7 @@ if (Test-Path $CopilotRepoDir) {
     $instrSource = "$CopilotRepoDir\copilot-instructions.md"
     $instrTarget = "$CopilotRuntimeDir\copilot-instructions.md"
     if (Test-Path $instrSource) {
-        New-Item -ItemType SymbolicLink `
-            -Path $instrTarget `
-            -Target $instrSource `
-            -Force | Out-Null
+        New-SymlinkSafe -Path $instrTarget -Target $instrSource
         Write-Host "  Custom instructions symlinked." -ForegroundColor Green
     }
 
@@ -1028,7 +1043,8 @@ if (Test-Path $CopilotRepoDir) {
     if (Test-Path $portableSource) {
         $portable = Get-Content $portableSource -Raw | ConvertFrom-Json
         if (Test-Path $configTarget) {
-            $local = Get-Content $configTarget -Raw | ConvertFrom-Json
+            # Strip JS-style line comments (config.json may have them) before parsing
+            $local = (Get-Content $configTarget -Raw) -replace '(?m)^\s*//.*$' | ConvertFrom-Json
         } else {
             $local = [PSCustomObject]@{}
         }
