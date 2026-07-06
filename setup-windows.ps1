@@ -17,7 +17,7 @@ if (-not (Test-Path "$ConfigPath\ohmyposh\config.json")) {
 
 # Step counter for progress display (auto-increments — no need to renumber steps)
 $script:CurrentStep = 0
-$TotalSteps = 17
+$TotalSteps = 18
 function Write-Step($label) {
     $script:CurrentStep++
     Write-Host "`n[$script:CurrentStep/$TotalSteps] $label" -ForegroundColor Yellow
@@ -1083,6 +1083,26 @@ if (Test-Path $CopilotRepoDir) {
     Write-Host "  NOTE: Run achintStuff\install-copilot-skills.ps1 for MCP configs and private skills." -ForegroundColor Yellow
 } else {
     Write-Host "Copilot config folder not found in repo. Skipping." -ForegroundColor Gray
+}
+
+# ------------------------------------------------------------------------------
+# Copilot CLI Plugins
+# ------------------------------------------------------------------------------
+Write-Step "Copilot CLI plugins..."
+
+if (Get-Command copilot -ErrorAction SilentlyContinue) {
+    # ponytail: "lazy senior dev" minimal-code plugin (personal, not work-specific).
+    # Idempotent - skips if the marketplace/plugin is already present. Its lifecycle
+    # hooks want `node` on PATH; without it the plugin installs but stays quiet.
+    if ((copilot plugin marketplace list 2>&1 | Out-String) -notmatch 'DietrichGebert/ponytail') {
+        copilot plugin marketplace add DietrichGebert/ponytail 2>&1 | Out-Null
+    }
+    if ((copilot plugin list 2>&1 | Out-String) -notmatch 'ponytail@ponytail') {
+        copilot plugin install ponytail@ponytail 2>&1 | Out-Null
+    }
+    Write-Host "  Installed Copilot plugin: ponytail" -ForegroundColor Green
+} else {
+    Write-Host "  copilot CLI not on PATH - skipping ponytail plugin." -ForegroundColor Gray
 }
 
 # ------------------------------------------------------------------------------
