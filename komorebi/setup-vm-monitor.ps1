@@ -86,7 +86,7 @@ if ($oldDeviceId -eq $deviceId) {
     Write-Host "  display_index_preferences already correct." -ForegroundColor Green
 } elseif ($PSCmdlet.ShouldProcess($defaultConfig, "Set display_index_preferences[0] = $deviceId")) {
     $komorebiJson.display_index_preferences.'0' = $deviceId
-    $komorebiJson | ConvertTo-Json -Depth 10 | Set-Content $defaultConfig -Encoding UTF8
+    [System.IO.File]::WriteAllText($defaultConfig, ($komorebiJson | ConvertTo-Json -Depth 10), [System.Text.UTF8Encoding]::new($false))
     Write-Host "  Updated device_id: $oldDeviceId -> $deviceId" -ForegroundColor Yellow
 }
 
