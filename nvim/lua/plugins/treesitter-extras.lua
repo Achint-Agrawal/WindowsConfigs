@@ -7,6 +7,9 @@ return {
       "latex", -- For LaTeX math expressions
       "regex", -- For better regex highlighting in cmdline
       "bash", -- For bash command highlighting in cmdline
+      "sql",
+      "rust",
+      "powershell",
     },
   },
 }
