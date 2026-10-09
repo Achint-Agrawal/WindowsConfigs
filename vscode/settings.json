@@ -1,4 +1,8 @@
 {
+    "editor.fontFamily": "'JetBrainsMono Nerd Font', Consolas, 'Courier New', monospace",
+    "editor.fontLigatures": true,
+    "editor.fontSize": 14,
+    "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font', Consolas, 'Courier New', monospace",
     "redhat.telemetry.enabled": false,
     "devprod.vulnerability-extension.codeReview.adoOrganizations": [
         "microsoft",
@@ -25,7 +29,6 @@
         }
     ],
     "dev.containers.executeInWSL": true,
-    "chat.viewSessions.orientation": "stacked",
     "python.terminal.useEnvFile": true,
     "mssql.connections": [
         {
@@ -50,5 +53,27 @@
             "allowedDuringChat": true
         }
     },
-    "docker.extension.enableComposeLanguageServer": false
+    "docker.extension.enableComposeLanguageServer": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.renderWhitespace": "all",
+    "diffEditor.experimental.showMoves": true,
+    "yaml.disableSchemaDetection": [
+        "azure-pipelines.yml",
+        "azure-pipelines.yaml"
+    ],
+    "security.allowedUNCHosts": [
+        "wsl.localhost"
+    ],
+    "remote.SSH.localServerDownload": "auto",
+    "security.promptForLocalFileProtocolHandling": false,
+    "chat.hookFilesLocations": {
+        ".github/hooks": true,
+        ".claude/settings.local.json": true,
+        ".claude/settings.json": true,
+        "~/.copilot/hooks": true,
+        "~/.claude/settings.json": true,
+        "~/.agents/hooks": true
+    },
+    "task.allowAutomaticTasks": "off",
+    "agents.voice.voice": "birch_neutral"
 }
