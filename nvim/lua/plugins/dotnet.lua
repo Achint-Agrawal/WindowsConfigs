@@ -50,6 +50,15 @@ return {
       }
       opts.servers.roslyn_ls = server
 
+      if vim.fn.has("win32") == 1 then
+        -- Use Roslyn's native watcher; Neovim's Windows relative globs miss normalized paths.
+        server.capabilities = {
+          workspace = {
+            didChangeWatchedFiles = { dynamicRegistration = false },
+          },
+        }
+      end
+
       server.root_dir = function(bufnr, on_dir)
         local filename = vim.api.nvim_buf_get_name(bufnr)
         local util = require("lspconfig.util")

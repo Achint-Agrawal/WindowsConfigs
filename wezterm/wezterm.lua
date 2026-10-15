@@ -3,9 +3,27 @@ local act = wezterm.action
 
 local config = wezterm.config_builder and wezterm.config_builder() or {}
 
--- Use WebGpu frontend (OpenGL too old on this system)
+-- Keep WebGPU for machines whose OpenGL implementation is too old.
 config.front_end = "WebGpu"
 config.webgpu_power_preference = "HighPerformance"
+
+local hardware_gpu
+for _, gpu in ipairs(wezterm.gui.enumerate_gpus()) do
+  if gpu.device_type == "DiscreteGpu" then
+    hardware_gpu = gpu
+    break
+  elseif gpu.device_type == "IntegratedGpu" then
+    hardware_gpu = hardware_gpu or gpu
+  end
+end
+
+if hardware_gpu then
+  config.webgpu_preferred_adapter = hardware_gpu
+else
+  config.animation_fps = 1
+  config.cursor_blink_ease_in = "Constant"
+  config.cursor_blink_ease_out = "Constant"
+end
 
 -- Set PowerShell 7 as default shell
 config.default_prog = { "C:\\Program Files\\PowerShell\\7\\pwsh.exe" }

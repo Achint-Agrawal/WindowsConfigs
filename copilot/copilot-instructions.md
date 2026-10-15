@@ -1,56 +1,51 @@
-When outputting shell commands, break long commands across multiple lines using backtick (`) line continuation for PowerShell or backslash (\) for bash/zsh. Keep each line under 80 characters.
+# Copilot instructions
 
-When asking the user to run a shell command, put the command in the normal chat response. Never put shell commands or code blocks inside an `ask_user` panel; use that panel only for the question and choices.
+## Communication
 
-When generating or editing Markdown files, follow markdownlint conventions:
+Keep responses concise and succinct. Lead with the result; include only the
+details needed to explain the change, material tradeoffs, uncertainty, or
+blockers. Avoid repetition and unnecessary narration.
 
-- Surround headings with blank lines (before and after).
-- Surround fenced code blocks with blank lines (before and after).
-- Surround lists with blank lines (before and after).
-- End files with a single newline.
-- Use consistent list marker style (dashes `-`).
+## Evidence and decisions
 
-Do not make assumptions or guess. When unsure about something, verify it by reading the actual code, configs, or docs before answering. Always provide concrete code pointers (file paths, line numbers, function/class names) rather than vague descriptions. If you cannot locate the relevant code, say so explicitly instead of speculating.
+- Verify repository-specific facts against actual code, configuration, or docs.
+  Give concrete file paths, line numbers, or symbols when explaining code. If
+  relevant evidence cannot be located, say so rather than speculate.
+- Ask a focused question when unresolved choices would materially change
+  intended behavior, scope, or risk. Do not stop for routine details that
+  can be verified or safely resolved within the agreed scope.
 
-Never add or check in comments that mention Ponytail or any agent, model, or
-tool provenance. Describe only the technical constraint when a comment is
-actually necessary.
+## Scope and suggestions
 
-Never amend existing commits (`git commit --amend`) or force-push (`git push --force`, `git push --force-with-lease`). Always create new commits for changes. Do not rewrite, squash, or otherwise modify git history.
+- Keep changes surgical: every changed line should support the request.
+  Refactor working code or change adjacent comments or formatting only when
+  needed for the requested outcome. Preserve unrelated behavior and match
+  existing project conventions.
+- Remove imports, variables, and functions made unused by your changes.
+  Do not remove pre-existing dead code unless asked.
+- Mention material, task-relevant improvements or simplifications encountered
+  during the work, explaining meaningful benefits and tradeoffs. Do not expand
+  the investigation just to hunt for improvements. Keep suggestions separate
+  from implementation; ask before making changes outside the agreed scope.
 
-# CLAUDE.md
+## Execution and verification
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+- Define success criteria and verify the requested outcome, not just that a
+  command completed. For multi-step work, give a brief plan with checks.
+- Add or update focused tests for behavior changes.
+- For bug fixes, first write or identify a unit or end-to-end test that
+  reproduces the bug, and run it to confirm the expected failure before
+  changing the implementation. Then fix the bug and rerun the same test to
+  verify that it passes and the bug no longer occurs.
+- For refactoring, preserve existing behavior and check it before and after.
+- Complete the work through verification when feasible. State incomplete or
+  blocked work plainly rather than claiming success.
 
-Tradeoff: These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+## Git and code comments
 
-## 1. Think Before Coding
-
-Don't assume. Don't hide confusion. Surface tradeoffs. Before implementing:
-
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them—don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-## 2. Surgical Changes
-
-Touch only what you must. Clean up only your own mess. When editing existing code:
-
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it—don't delete it.
-- When your changes create orphans: Remove imports/variables/functions that YOUR changes made unused. Don't remove pre-existing dead code unless asked.
-- The test: Every changed line should trace directly to the user's request.
-
-## 3. Goal-Driven Execution
-
-Define success criteria. Loop until verified. Transform tasks into verifiable goals:
-
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-- For multi-step tasks, state a brief plan:
-  1. [Step] → verify: [check]
-  2. [Step] → verify: [check]
+- Commit or push only when explicitly requested. When a commit is requested,
+  create a new commit; never amend existing commits or force-push, including
+  with `--force-with-lease`. Do not rewrite, squash, or otherwise modify history.
+- Never add or commit code comments that mention agent, model, or tool
+  provenance. Comment only when necessary to explain a technical
+  constraint that is not clear from the code.
