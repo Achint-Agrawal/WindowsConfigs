@@ -26,6 +26,12 @@ in the source repository.
 
 Restart Neovim after changing the configuration.
 
+StyleCop rules configured as errors are intentionally still visible.
+If hundreds of unexpected errors appear together with `^M` markers or
+GitSigns changes that disagree with LazyGit, see
+`nvim-mixed-line-endings.md`. That is a document-serialization problem,
+not a reason to suppress analyzer errors.
+
 ## Prevention
 
 - Filter diagnostic virtual text and underlines separately from diagnostic

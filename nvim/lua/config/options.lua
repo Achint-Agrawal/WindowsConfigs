@@ -5,6 +5,8 @@
 vim.g.snacks_animate = false
 vim.opt.guicursor:append("a:blinkon0")
 
+require("config.line-endings").setup()
+
 vim.filetype.add({
   extension = {
     props = "xml",
